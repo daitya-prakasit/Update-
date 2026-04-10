@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAITYA - Image Text Editor (Pro Version)</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --primary-hover: #7c3aed; --success: #10b981; --success-hover: #059669; --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #f8fafc; --text-muted: #94a3b8; }
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: var(--surface); border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); padding: 30px; border: 1px solid var(--border); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary); margin: 0 0 10px 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { color: var(--text-muted); margin: 0; font-size: 14px; }
+        
+        .upload-section { border: 2px dashed var(--border); padding: 30px; text-align: center; border-radius: 12px; background: #0f172a; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
+        .upload-section:hover { border-color: var(--primary); }
+        input[type="file"] { font-size: 15px; color: var(--text); }
+
+        .editor-panels { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        .control-panel { background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .control-panel h3 { margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .input-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+        input[type="text"] { padding: 12px; background: #1e293b; color: white; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; font-family: inherit;}
+        input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; margin-bottom: 10px;}
+        .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; transform: none; }
+        
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: var(--success-hover); }
+
+        #status { text-align: center; padding: 15px; border-radius: 8px; background: #020617; color: #10b981; font-weight: bold; margin-bottom: 20px; display: none; font-size: 13px; border: 1px solid #10b981;}
+        
+        .result-panel { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; position: relative; cursor: crosshair;}
+        canvas { max-width: 100%; height: auto; display: block; }
+
+        .color-preview-box { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); margin-bottom: 15px;}
+        .color-sample { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); }
+        .color-label { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 6px; font-weight: bold;}
+
+        @media (max-width: 768px) { .editor-panels { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>DAITYA Execution Terminal</h1>
+            <p>Module: Deep OCR | Interactive Select | Exact Color Match | Dynamic Size</p>
+        </div>
+
+        <div id="status">> System initialized. Waiting for payload (Image).</div>
+
+        <div class="upload-section">
+            <input type="file" id="uploadImage" accept="image/*" />
+        </div>
+
+        <div class="editor-panels">
+            <div class="control-panel">
+                <h3>Replacement Parameters</h3>
+                <div class="input-group">
+                    <label>Selected Target (Click on Image)</label>
+                    <input type="text" id="oldText" placeholder="Click text to select..." readonly>
+                </div>
+                <div class="input-group">
+                    <label>Injection Text</label>
+                    <input type="text" id="newText" placeholder="e.g. BYPASS">
+                </div>
+                
+                <button class="btn" id="btnReplace" onclick="processTextReplacement()" disabled>
+                    [ EXECUTE OVERRIDE ]
+                </button>
+
+                <div class="color-preview-box">
+                    <div>
+                        <div id="sampleBackground" class="color-sample" style="background: #000;"></div>
+                        <div class="color-label">BG MASK</div>
+                    </div>
+                    <div>
+                        <div id="sampleText" class="color-sample" style="background: #fff;"></div>
+                        <div class="color-label">TEXT HEX</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" id="btnDownload" onclick="downloadImage()" disabled>
+                    [ DOWNLOAD OUTPUT ]
+                </button>
+            </div>
+            
+            <div class="result-panel">
+                <canvas id="outputCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentImage = null;
+        let originalCanvas = null; 
+        let recognizedWords = [];
+        let selectedWord = null;
+
+        const statusEl = document.getElementById('status');
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        function logStatus(msg) {
+            statusEl.style.display = 'block';
+            statusEl.innerText = '> ' + msg;
+        }
+
+        // Image Upload Handler
+        document.getElementById('uploadImage').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    currentImage = new Image();
+                    currentImage.onload = async function() {
+                        canvas.width = currentImage.width;
+                        canvas.height = currentImage.height;
+                        ctx.drawImage(currentImage, 0, 0);
+                        
+                        originalCanvas = document.createElement('canvas');
+                        originalCanvas.width = currentImage.width;
+                        originalCanvas.height = currentImage.height;
+                        originalCanvas.getContext('2d', { willReadFrequently: true }).drawImage(currentImage, 0, 0);
+
+                        logStatus('Scanning pixel matrix for text regions... Please wait.');
+                        document.getElementById('uploadImage').disabled = true;
+
+                        try {
+                            const { data: { words } } = await Tesseract.recognize(
+                                originalCanvas, 'eng', { logger: m => {
+                                    if(m.status === 'recognizing text') logStatus(`Scanning... ${Math.round(m.progress * 100)}%`);
+                                }}
+                            );
+                            recognizedWords = words;
+                            logStatus('Scan complete. Click directly on the image to select text.');
+                            document.getElementById('btnReplace').disabled = false;
+                            document.getElementById('btnDownload').disabled = false;
+                        } catch (err) {
+                            logStatus('OCR Scan Failed: ' + err.message);
+                        }
+                        
+                        document.getElementById('uploadImage').disabled = false;
+                    };
+                    currentImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Click to Select Text
+        canvas.addEventListener('click', (e) => {
+            if (recognizedWords.length === 0) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            // Clear previous highlights
+            ctx.drawImage(originalCanvas, 0, 0);
+
+            selectedWord = recognizedWords.find(w => {
+                return x >= w.bbox.x0 && x <= w.bbox.x1 && y >= w.bbox.y0 && y <= w.bbox.y1;
+            });
+
+            if (selectedWord) {
+                // Draw Selection Box
+                ctx.strokeStyle = '#8b5cf6';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(selectedWord.bbox.x0 - 2, selectedWord.bbox.y0 - 2, (selectedWord.bbox.x1 - selectedWord.bbox.x0) + 4, (selectedWord.bbox.y1 - selectedWord.bbox.y0) + 4);
+
+                document.getElementById('oldText').value = selectedWord.text;
+                document.getElementById('newText').focus();
+                logStatus(`Target locked: [${selectedWord.text}]. Ready for injection.`);
+            } else {
+                document.getElementById('oldText').value = '';
+                logStatus('Selection cleared.');
+            }
+        });
+
+        // Replacement Logic
+        function processTextReplacement() {
+            if (!currentImage || !originalCanvas) return;
+            const newTextData = document.getElementById('newText').value;
+
+            if (!selectedWord) {
+                logStatus('ERROR: No target selected. Click text on the image first.');
+                return;
+            }
+
+            try {
+                // Remove highlight box by redrawing original
+                ctx.drawImage(originalCanvas, 0, 0);
+
+                const bbox = selectedWord.bbox;
+                const { x0, y0, x1, y1 } = bbox;
+                const width = x1 - x0;
+                const targetHeight = y1 - y0;
+
+                // Color Extraction
+                const { backgroundColor, textColor } = analyzeBBoxColors(bbox, originalCanvas);
+                document.getElementById('sampleBackground').style.background = backgroundColor;
+                document.getElementById('sampleText').style.background = textColor;
+
+                // Erase Old Text
+                ctx.fillStyle = backgroundColor;
+                const maskPadding = targetHeight * 0.15; 
+                ctx.fillRect(x0 - maskPadding, y0 - maskPadding, width + (maskPadding*2), targetHeight + (maskPadding*2));
+
+                // Dynamic Font Scaling
+                let fontSize = targetHeight; 
+                ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
+                
+                let metrics = ctx.measureText(newTextData);
+                let actualRenderedHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+                
+                if (actualRenderedHeight > 0) {
+                    let scaleFactor = targetHeight / actualRenderedHeight;
+                    fontSize = fontSize * scaleFactor * 0.85; 
+                }
+
+                // Inject Text
+                ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
+                ctx.fillStyle = textColor;
+                ctx.textBaseline = 'top';
+                ctx.fillText(newTextData, x0, y0 + (targetHeight * 0.05));
+
+                // Save changes to original canvas so subsequent edits stack
+                originalCanvas.getContext('2d', { willReadFrequently: true }).drawImage(canvas, 0, 0);
+
+                logStatus(`OVERRIDE COMPLETE. Injected [${newTextData}].`);
+                
+                // Reset Selection
+                selectedWord = null;
+                document.getElementById('oldText').value = '';
+                document.getElementById('newText').value = '';
+
+            } catch (err) {
+                logStatus('CRITICAL ERROR: ' + err.message);
+            }
+        }
+
+        // --- Core Functions ---
+        function analyzeBBoxColors(bbox, sourceCanvas) {
+            const { x0, y0, x1, y1 } = bbox;
+            const w = x1 - x0;
+            const h = y1 - y0;
+            const tempCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
+            
+            const p = Math.max(2, Math.round(h * 0.4)); 
+            const bgAreas = [
+                { x: Math.max(0, x0 - p), y: y0, w: p, h: h },
+                { x: x1, y: y0, w: p, h: h },
+                { x: x0, y: Math.max(0, y0 - p), w: w, h: p },
+                { x: x0, y: y1, w: w, h: p }
+            ];
+
+            const bgAvg = calculateAverageColor(bgAreas, tempCtx);
+            const bgRGB = bgAvg.match(/\d+/g).map(Number);
+            const textData = tempCtx.getImageData(x0, y0, w, h).data;
+            const textRGB = getHighestContrastColor(textData, bgRGB);
+
+            return { backgroundColor: bgAvg, textColor: textRGB };
+        }
+
+        function calculateAverageColor(rects, context) {
+            let r=0, g=0, b=0, count=0;
+            rects.forEach(rect => {
+                if (rect.w > 0 && rect.h > 0) {
+                    const data = context.getImageData(rect.x, rect.y, rect.w, rect.h).data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        r += data[i]; g += data[i+1]; b += data[i+2]; count++;
+                    }
+                }
+            });
+            if (count === 0) return 'rgb(255,255,255)';
+            return `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
+        }
+
+        function getHighestContrastColor(pixels, bgColor) {
+            let maxContrast = [0,0,0];
+            let maxDistance = -1;
+            for (let i = 0; i < pixels.length; i += 8) { 
+                const pr = pixels[i], pg = pixels[i+1], pb = pixels[i+2];
+                const distance = Math.sqrt(Math.pow(pr - bgColor[0], 2) + Math.pow(pg - bgColor[1], 2) + Math.pow(pb - bgColor[2], 2));
+                if (distance > maxDistance) {
+                    maxDistance = distance;
+                    maxContrast = [pr, pg, pb];
+                }
+            }
+            if (maxDistance < 20) return `rgb(0,0,0)`; 
+            return `rgb(${maxContrast[0]}, ${maxContrast[1]}, ${maxContrast[2]})`;
+        }
+
+        // --- Download Execution ---
+        function downloadImage() {
+            if (!currentImage) return;
+            const link = document.createElement('a');
+            link.download = 'DAITYA_Output_Image.png';
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+            logStatus('Payload output downloaded successfully.');
+        }
+    </script>
+</body>
+</html>
+

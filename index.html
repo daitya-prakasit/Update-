@@ -50,7 +50,7 @@
     <div class="container">
         <div class="header">
             <h1>DAITYA Execution Terminal</h1>
-            <p>Module: Deep OCR | Interactive Select | Exact Color Match | Dynamic Size</p>
+            <p>Module: Multi-Select | Exact Sizing | Exact Color Match</p>
         </div>
 
         <div id="status">> System initialized. Waiting for payload (Image).</div>
@@ -63,8 +63,8 @@
             <div class="control-panel">
                 <h3>Replacement Parameters</h3>
                 <div class="input-group">
-                    <label>Selected Target (Click on Image)</label>
-                    <input type="text" id="oldText" placeholder="Click text to select..." readonly>
+                    <label>Selected Targets (Multi-Select Enabled)</label>
+                    <input type="text" id="oldText" placeholder="Click words to select/deselect..." readonly>
                 </div>
                 <div class="input-group">
                     <label>Injection Text</label>
@@ -101,7 +101,7 @@
         let currentImage = null;
         let originalCanvas = null; 
         let recognizedWords = [];
-        let selectedWord = null;
+        let selectedWords = [];
 
         const statusEl = document.getElementById('status');
         const canvas = document.getElementById('outputCanvas');
@@ -129,6 +129,9 @@
                         originalCanvas.height = currentImage.height;
                         originalCanvas.getContext('2d', { willReadFrequently: true }).drawImage(currentImage, 0, 0);
 
+                        selectedWords = [];
+                        document.getElementById('oldText').value = '';
+
                         logStatus('Scanning pixel matrix for text regions... Please wait.');
                         document.getElementById('uploadImage').disabled = true;
 
@@ -139,7 +142,7 @@
                                 }}
                             );
                             recognizedWords = words;
-                            logStatus('Scan complete. Click directly on the image to select text.');
+                            logStatus('Scan complete. Click words on the image to select multiple.');
                             document.getElementById('btnReplace').disabled = false;
                             document.getElementById('btnDownload').disabled = false;
                         } catch (err) {
@@ -154,7 +157,7 @@
             }
         });
 
-        // Click to Select Text
+        // Click to Select Multiple Text
         canvas.addEventListener('click', (e) => {
             if (recognizedWords.length === 0) return;
 
@@ -164,82 +167,92 @@
             const x = (e.clientX - rect.left) * scaleX;
             const y = (e.clientY - rect.top) * scaleY;
 
-            // Clear previous highlights
-            ctx.drawImage(originalCanvas, 0, 0);
-
-            selectedWord = recognizedWords.find(w => {
+            // Find clicked word
+            const clickedWord = recognizedWords.find(w => {
                 return x >= w.bbox.x0 && x <= w.bbox.x1 && y >= w.bbox.y0 && y <= w.bbox.y1;
             });
 
-            if (selectedWord) {
-                // Draw Selection Box
-                ctx.strokeStyle = '#8b5cf6';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(selectedWord.bbox.x0 - 2, selectedWord.bbox.y0 - 2, (selectedWord.bbox.x1 - selectedWord.bbox.x0) + 4, (selectedWord.bbox.y1 - selectedWord.bbox.y0) + 4);
+            if (clickedWord) {
+                // Toggle selection
+                const index = selectedWords.findIndex(w => w === clickedWord);
+                if (index > -1) {
+                    selectedWords.splice(index, 1); // Deselect
+                } else {
+                    selectedWords.push(clickedWord); // Select
+                }
+            }
 
-                document.getElementById('oldText').value = selectedWord.text;
-                document.getElementById('newText').focus();
-                logStatus(`Target locked: [${selectedWord.text}]. Ready for injection.`);
+            // Redraw base image and highlight all selected words
+            ctx.drawImage(originalCanvas, 0, 0);
+            
+            selectedWords.forEach(w => {
+                ctx.strokeStyle = '#10b981'; // Green highlights for multi-select
+                ctx.lineWidth = 3;
+                ctx.strokeRect(w.bbox.x0 - 2, w.bbox.y0 - 2, (w.bbox.x1 - w.bbox.x0) + 4, (w.bbox.y1 - w.bbox.y0) + 4);
+            });
+
+            const joinedText = selectedWords.map(w => w.text).join(' ');
+            document.getElementById('oldText').value = joinedText;
+
+            if (selectedWords.length > 0) {
+                logStatus(`Targets locked: [${joinedText}]. Ready for injection.`);
             } else {
-                document.getElementById('oldText').value = '';
                 logStatus('Selection cleared.');
             }
         });
 
         // Replacement Logic
         function processTextReplacement() {
-            if (!currentImage || !originalCanvas) return;
-            const newTextData = document.getElementById('newText').value;
-
-            if (!selectedWord) {
-                logStatus('ERROR: No target selected. Click text on the image first.');
+            if (!currentImage || !originalCanvas || selectedWords.length === 0) {
+                logStatus('ERROR: No target selected.');
                 return;
             }
 
+            const newTextData = document.getElementById('newText').value;
+
             try {
-                // Remove highlight box by redrawing original
+                // Remove highlight boxes by redrawing original
                 ctx.drawImage(originalCanvas, 0, 0);
 
-                const bbox = selectedWord.bbox;
-                const { x0, y0, x1, y1 } = bbox;
-                const width = x1 - x0;
-                const targetHeight = y1 - y0;
+                // Calculate Merged Bounding Box for all selected words
+                const minX = Math.min(...selectedWords.map(w => w.bbox.x0));
+                const minY = Math.min(...selectedWords.map(w => w.bbox.y0));
+                const maxX = Math.max(...selectedWords.map(w => w.bbox.x1));
+                const maxY = Math.max(...selectedWords.map(w => w.bbox.y1));
+                
+                const targetHeight = maxY - minY;
 
-                // Color Extraction
-                const { backgroundColor, textColor } = analyzeBBoxColors(bbox, originalCanvas);
+                // Color Extraction based on the first selected word
+                const { backgroundColor, textColor } = analyzeBBoxColors(selectedWords[0].bbox, originalCanvas);
                 document.getElementById('sampleBackground').style.background = backgroundColor;
                 document.getElementById('sampleText').style.background = textColor;
 
-                // Erase Old Text
+                // Erase Only Selected Words
                 ctx.fillStyle = backgroundColor;
-                const maskPadding = targetHeight * 0.15; 
-                ctx.fillRect(x0 - maskPadding, y0 - maskPadding, width + (maskPadding*2), targetHeight + (maskPadding*2));
+                const maskPadding = Math.max(2, targetHeight * 0.1); 
+                selectedWords.forEach(w => {
+                    const width = w.bbox.x1 - w.bbox.x0;
+                    const height = w.bbox.y1 - w.bbox.y0;
+                    ctx.fillRect(w.bbox.x0 - maskPadding, w.bbox.y0 - maskPadding, width + (maskPadding*2), height + (maskPadding*2));
+                });
 
-                // Dynamic Font Scaling
-                let fontSize = targetHeight; 
-                ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
-                
-                let metrics = ctx.measureText(newTextData);
-                let actualRenderedHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-                
-                if (actualRenderedHeight > 0) {
-                    let scaleFactor = targetHeight / actualRenderedHeight;
-                    fontSize = fontSize * scaleFactor * 0.85; 
-                }
-
-                // Inject Text
+                // Exact Sizing Fix
+                // Set font size slightly larger than BBox height to visually match the exact pixel height
+                const fontSize = Math.round(targetHeight * 1.15); 
                 ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
                 ctx.fillStyle = textColor;
                 ctx.textBaseline = 'top';
-                ctx.fillText(newTextData, x0, y0 + (targetHeight * 0.05));
+
+                // Inject Text starting at the Top-Left of the merged selection
+                ctx.fillText(newTextData, minX, minY - (targetHeight * 0.1));
 
                 // Save changes to original canvas so subsequent edits stack
                 originalCanvas.getContext('2d', { willReadFrequently: true }).drawImage(canvas, 0, 0);
 
-                logStatus(`OVERRIDE COMPLETE. Injected [${newTextData}].`);
+                logStatus(`OVERRIDE COMPLETE. Injected [${newTextData}] over multiple targets.`);
                 
                 // Reset Selection
-                selectedWord = null;
+                selectedWords = [];
                 document.getElementById('oldText').value = '';
                 document.getElementById('newText').value = '';
 
@@ -311,5 +324,5 @@
         }
     </script>
 </body>
-</html>
-
+    </html>
+    

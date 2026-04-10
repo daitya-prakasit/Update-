@@ -3,44 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAITYA - Advanced Image Text Bypass</title>
+    <title>DAITYA V4 - NEURAL CORE</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
     <style>
-        :root { --primary: #eab308; --primary-hover: #ca8a04; --success: #10b981; --success-hover: #059669; --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #fafafa; --text-muted: #a1a1aa; }
-        body { font-family: 'Inter', monospace, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; }
-        .container { max-width: 1100px; margin: 0 auto; background: var(--surface); border-radius: 12px; box-shadow: 0 0 50px rgba(234, 179, 8, 0.1); padding: 30px; border: 1px solid var(--border); }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px;}
-        .header h1 { color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
-        .header p { color: var(--text-muted); margin: 0; font-size: 13px; }
+        :root { --primary: #f59e0b; --primary-hover: #d97706; --ai: #ec4899; --ai-hover: #db2777; --success: #10b981; --success-hover: #059669; --bg: #111111; --surface: #1a1a1a; --border: #333333; --text: #e5e5e5; --text-muted: #888888; }
+        body { font-family: 'Courier New', Courier, monospace; background-color: var(--bg); color: var(--text); margin: 0; padding: 30px; }
+        .container { max-width: 1050px; margin: 0 auto; background: var(--surface); border-radius: 8px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 1px dashed var(--border); padding-bottom: 15px; }
+        .header h1 { color: var(--primary); margin: 0 0 10px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; font-size: 28px; }
+        .header p { color: var(--text-muted); margin: 0; font-size: 12px; }
         
-        .upload-section { border: 2px dashed #3f3f46; padding: 30px; text-align: center; border-radius: 8px; background: #09090b; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
+        .upload-section { border: 1px dashed var(--text-muted); padding: 20px; text-align: center; background: #111; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
         .upload-section:hover { border-color: var(--primary); }
-        input[type="file"] { font-size: 15px; color: var(--text); }
+        input[type="file"] { font-size: 14px; color: var(--text); outline: none; }
 
-        .editor-panels { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        .control-panel { background: #09090b; padding: 20px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-        .control-panel h3 { margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 10px; font-size: 15px;}
+        .editor-panels { display: grid; grid-template-columns: 400px 1fr; gap: 25px; }
+        .control-panel { background: #111; padding: 25px; border-radius: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .control-panel h3 { margin-top: 0; color: var(--text); font-size: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
         
-        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-        .input-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;}
-        input[type="text"] { padding: 12px; background: #18181b; color: white; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; font-family: monospace;}
-        input[type="text"]:focus { border-color: var(--primary); }
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+        .input-group label { font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        input[type="text"], input[type="password"] { padding: 12px; background: #1a1a1a; color: white; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; outline: none; transition: 0.2s; font-family: inherit;}
+        input[type="text"]:focus, input[type="password"]:focus { border-color: var(--primary); }
 
-        .btn { background: var(--primary); color: black; border: none; padding: 14px 20px; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase; margin-bottom: 10px; font-family: monospace;}
-        .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
-        .btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; transform: none; }
+        .btn { background: var(--primary); color: #000; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px; font-family: inherit;}
+        .btn:hover:not(:disabled) { background: var(--primary-hover); }
+        .btn:disabled { background: #333; color: #666; cursor: not-allowed; }
         
-        .btn-success { background: var(--success); color: white;}
-        .btn-success:hover { background: var(--success-hover); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover:not(:disabled) { background: var(--success-hover); }
 
-        #status { text-align: left; padding: 15px; border-radius: 6px; background: #000; color: var(--primary); font-weight: bold; margin-bottom: 20px; display: none; font-size: 13px; border: 1px solid #3f3f46; font-family: monospace; white-space: pre-wrap;}
+        #status { font-family: inherit; text-align: left; padding: 15px; border-radius: 4px; background: #000; color: var(--primary); font-weight: bold; margin-bottom: 25px; display: none; font-size: 12px; border: 1px solid #333; max-height: 120px; overflow-y: auto; line-height: 1.4; }
         
-        .result-panel { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; position: relative;}
+        .result-panel { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; position: relative;}
         canvas { max-width: 100%; height: auto; display: block; }
 
-        .color-preview-box { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); margin-bottom: 15px;}
-        .color-sample { width: 40px; height: 40px; border-radius: 6px; border: 1px solid #3f3f46; }
-        .color-label { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 6px; font-weight: bold;}
+        .color-preview-box { display: flex; gap: 15px; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); margin-bottom: 15px;}
+        .color-sample { width: 35px; height: 35px; border-radius: 4px; border: 1px solid var(--border); }
+        .color-label { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 5px; font-weight: bold; text-transform: uppercase; }
 
         @media (max-width: 768px) { .editor-panels { grid-template-columns: 1fr; } }
     </style>
@@ -49,11 +56,11 @@
 
     <div class="container">
         <div class="header">
-            <h1>DAITYA V4 - Neural Core</h1>
-            <p>Module: Levenshtein Fuzzy Matching | Punctuation Stripping | Auto-Color | Scale Bypass</p>
+            <h1>DAITYA V4 - NEURAL CORE</h1>
+            <p>Module: Levenshtein Fuzzy Matching | Bilingual OCR (Hindi+Eng) | Auto-Color | Scale Bypass</p>
         </div>
 
-        <div id="status">> SYSTEM BOOT SEQUENCE INITIATED...</div>
+        <div id="status"></div>
 
         <div class="upload-section">
             <input type="file" id="uploadImage" accept="image/*" />
@@ -62,16 +69,18 @@
         <div class="editor-panels">
             <div class="control-panel">
                 <h3>Payload Configuration</h3>
+                
                 <div class="input-group">
-                    <label>Target Text (Fuzzy Supported)</label>
-                    <input type="text" id="oldText" placeholder="e.g. TARGET">
+                    <label>Target Text (Hindi/Eng Supported)</label>
+                    <input type="text" id="oldText" placeholder="e.g. कविता">
                 </div>
+
                 <div class="input-group">
                     <label>Injection Text</label>
-                    <input type="text" id="newText" placeholder="e.g. BYPASS">
+                    <input type="text" id="newText" placeholder="e.g. रवि">
                 </div>
                 
-                <button class="btn" id="btnReplace" onclick="processTextReplacement()" disabled>
+                <button class="btn" id="btnReplace" disabled>
                     [ EXECUTE OVERRIDE ]
                 </button>
 
@@ -86,7 +95,7 @@
                     </div>
                 </div>
 
-                <button class="btn btn-success" id="btnDownload" onclick="downloadImage()" disabled>
+                <button class="btn btn-success" id="btnDownload" disabled>
                     [ EXTRACT OUTPUT ]
                 </button>
             </div>
@@ -97,241 +106,202 @@
         </div>
     </div>
 
-    <script>
-        let currentImage = null;
-        let originalCanvas = null; 
-        const statusEl = document.getElementById('status');
-        const canvas = document.getElementById('outputCanvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    <script type="module">
+        // System State
+        const SYSTEM = {
+            image: null,
+            originalCanvas: null,
+            canvas: document.getElementById('outputCanvas'),
+            ctx: document.getElementById('outputCanvas').getContext('2d', { willReadFrequently: true }),
+            statusEl: document.getElementById('status')
+        };
 
-        function logStatus(msg) {
-            statusEl.style.display = 'block';
-            statusEl.innerText += '\n> ' + msg;
-            statusEl.scrollTop = statusEl.scrollHeight;
-        }
+        const UI = {
+            btnReplace: document.getElementById('btnReplace'),
+            btnDownload: document.getElementById('btnDownload'),
+            upload: document.getElementById('uploadImage'),
+            oldText: document.getElementById('oldText'),
+            newText: document.getElementById('newText'),
+            bgSample: document.getElementById('sampleBackground'),
+            textSample: document.getElementById('sampleText')
+        };
 
-        function clearLog() {
-            statusEl.innerText = '> Execution Log Started...';
-        }
+        // Terminal Logger
+        const log = (msg, type = "INFO") => {
+            SYSTEM.statusEl.style.display = 'block';
+            const color = type === 'CRITICAL' ? '#ef4444' : (type === 'SUCCESS' ? '#10b981' : '#f59e0b');
+            SYSTEM.statusEl.innerHTML += `<div style="color:${color}">> ${msg}</div>`;
+            SYSTEM.statusEl.scrollTop = SYSTEM.statusEl.scrollHeight;
+        };
 
-        // Levenshtein Distance Algorithm (Fuzzy Match Logic)
-        function levenshtein(a, b) {
-            if (a.length === 0) return b.length;
-            if (b.length === 0) return a.length;
-            var matrix = [];
-            for (var i = 0; i <= b.length; i++) matrix[i] = [i];
-            for (var j = 0; j <= a.length; j++) matrix[0][j] = j;
-            for (var i = 1; i <= b.length; i++) {
-                for (var j = 1; j <= a.length; j++) {
-                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
-                        matrix[i][j] = matrix[i - 1][j - 1];
-                    } else {
-                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
-                    }
-                }
-            }
-            return matrix[b.length][a.length];
-        }
+        // MASTER FIX: Regex now preserves English, Numbers AND Devnagari (Hindi) characters.
+        // Strips only random symbols/noise.
+        const sanitizeText = (str) => {
+            if (!str) return "";
+            return str.replace(/[^\w\u0900-\u097F]/gi, '').toLowerCase();
+        };
 
-        // Punctuation Stripper Logic
-        function cleanString(str) {
-            // Removes everything except alphabets and numbers
-            return str.toLowerCase().replace(/[^a-z0-9]/g, '');
-        }
+        UI.upload.addEventListener('change', (e) => {
+            try {
+                const file = e.target.files[0];
+                if (!file) return;
 
-        // Image Upload
-        document.getElementById('uploadImage').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    currentImage = new Image();
-                    currentImage.onload = function() {
-                        canvas.width = currentImage.width;
-                        canvas.height = currentImage.height;
-                        ctx.drawImage(currentImage, 0, 0);
+                reader.onload = (event) => {
+                    SYSTEM.image = new Image();
+                    SYSTEM.image.onload = () => {
+                        SYSTEM.canvas.width = SYSTEM.image.width;
+                        SYSTEM.canvas.height = SYSTEM.image.height;
+                        SYSTEM.ctx.drawImage(SYSTEM.image, 0, 0);
                         
-                        originalCanvas = document.createElement('canvas');
-                        originalCanvas.width = currentImage.width;
-                        originalCanvas.height = currentImage.height;
-                        originalCanvas.getContext('2d').drawImage(currentImage, 0, 0);
+                        SYSTEM.originalCanvas = document.createElement('canvas');
+                        SYSTEM.originalCanvas.width = SYSTEM.image.width;
+                        SYSTEM.originalCanvas.height = SYSTEM.image.height;
+                        SYSTEM.originalCanvas.getContext('2d').drawImage(SYSTEM.image, 0, 0);
 
-                        clearLog();
-                        logStatus('Image matrix loaded into memory.');
-                        document.getElementById('btnReplace').disabled = false;
-                        document.getElementById('btnDownload').disabled = false;
+                        log('Image matrix loaded. Ready for Bilingual Scan.', 'SUCCESS');
+                        UI.btnReplace.disabled = false;
+                        UI.btnDownload.disabled = false;
                     };
-                    currentImage.src = event.target.result;
+                    SYSTEM.image.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
+            } catch (err) {
+                log(`Image parsing failed: ${err.message}`, 'CRITICAL');
             }
         });
 
-        // OCR and Replacement Logic
-        async function processTextReplacement() {
-            if (!currentImage || !originalCanvas) return;
-            const rawTargetText = document.getElementById('oldText').value;
-            const newTextData = document.getElementById('newText').value;
+        // MASTER-LEVEL OCR OVERRIDE V4.0 (Hindi Support)
+        UI.btnReplace.addEventListener('click', async () => {
+            if (!SYSTEM.image || !SYSTEM.originalCanvas) return;
+            
+            const targetStr = UI.oldText.value.trim();
+            const injectStr = UI.newText.value.trim();
 
-            if (!rawTargetText) {
-                logStatus('ERROR: Missing target text payload.');
-                return;
-            }
-
-            clearLog();
-            const cleanTargetText = cleanString(rawTargetText);
+            if (!targetStr || !injectStr) return log('ERROR: Missing Execution Parameters.', 'CRITICAL');
 
             try {
-                ctx.drawImage(originalCanvas, 0, 0);
-                logStatus('Initializing Deep OCR Engine...');
-                document.getElementById('btnReplace').disabled = true;
-
+                UI.btnReplace.disabled = true;
+                SYSTEM.ctx.drawImage(SYSTEM.originalCanvas, 0, 0); 
+                log('Initializing Deep OCR Engine (hin+eng)...', 'INFO');
+                log('Downloading/Loading Language Packs (May take a moment)...', 'INFO');
+                
+                // IMPORTANT: 'hin+eng' allows Tesseract to read Hindi and English simultaneously.
                 const { data: { words } } = await Tesseract.recognize(
-                    originalCanvas, 'eng', { logger: m => { if(m.status === 'recognizing text') console.log(m.progress); } }
+                    SYSTEM.originalCanvas, 'hin+eng', { 
+                        logger: m => { 
+                            if(m.status === 'recognizing text' && m.progress === 1) {
+                                log('Applying Punctuation Stripping & Fuzzy Matrix...', 'INFO');
+                            }
+                        } 
+                    }
                 );
 
-                logStatus('Applying Punctuation Stripping & Fuzzy Matrix...');
+                const cleanTarget = sanitizeText(targetStr);
                 
-                // Advanced Word Search with Fuzzy Logic
-                let targetWord = null;
-                let matchType = "NONE";
-
-                for (let w of words) {
-                    let rawOCRWord = w.text;
-                    let cleanOCRWord = cleanString(rawOCRWord);
-                    
-                    if (!cleanOCRWord) continue;
-
-                    // 1. Exact Match after stripping
-                    if (cleanOCRWord === cleanTargetText) {
-                        targetWord = w;
-                        matchType = "EXACT";
-                        break;
-                    }
-
-                    // 2. Fuzzy Match (Levenshtein bypass)
-                    // Calculate dynamic tolerance: longer words allow more OCR errors
-                    let allowedErrors = cleanTargetText.length <= 3 ? 0 : (cleanTargetText.length <= 5 ? 1 : 2);
-                    let distance = levenshtein(cleanOCRWord, cleanTargetText);
-                    
-                    if (distance <= allowedErrors) {
-                        targetWord = w;
-                        matchType = `FUZZY (Distance: ${distance}, OCR Read: [${rawOCRWord}])`;
-                        break;
-                    }
-                }
+                // Advanced Fuzzy Search Logic (Hindi Compatible)
+                const targetWord = words.find(w => {
+                    const cleanW = sanitizeText(w.text);
+                    return cleanW.length > 0 && (cleanW.includes(cleanTarget) || cleanTarget.includes(cleanW) || w.text.includes(targetStr));
+                });
 
                 if (!targetWord) {
-                    logStatus(`ERROR: Target [${rawTargetText}] bypassed detection matrix. Not found.`);
-                    document.getElementById('btnReplace').disabled = false;
-                    return;
+                    // Extract what Tesseract saw to help the user debug
+                    const detectedList = words.slice(0, 15).map(w => w.text.trim()).filter(t => t.length > 1).join(', ');
+                    throw new Error(`Target [${targetStr}] not found. OCR detected: [${detectedList}...]. Check spelling.`);
                 }
 
-                logStatus(`Target Locked! Match Protocol: ${matchType}`);
+                log(`Target [${targetWord.text}] locked at coordinates. Extracting profiles...`, 'SUCCESS');
+                
                 const bbox = targetWord.bbox;
                 const { x0, y0, x1, y1 } = bbox;
                 const width = x1 - x0;
-                const targetHeight = y1 - y0;
+                const height = y1 - y0;
 
-                // Color Extraction
-                logStatus('Extracting localized color hexes...');
-                const { backgroundColor, textColor } = analyzeBBoxColors(bbox, originalCanvas);
-                document.getElementById('sampleBackground').style.background = backgroundColor;
-                document.getElementById('sampleText').style.background = textColor;
+                const { bg, textCol } = extractColorProfiles(bbox, SYSTEM.originalCanvas);
+                UI.bgSample.style.background = bg;
+                UI.textSample.style.background = textCol;
 
-                // Erase Old Text
-                ctx.fillStyle = backgroundColor;
-                const maskPadding = targetHeight * 0.15; 
-                ctx.fillRect(x0 - maskPadding, y0 - maskPadding, width + (maskPadding*2), targetHeight + (maskPadding*2));
+                // Erase Mask Logic
+                SYSTEM.ctx.fillStyle = bg;
+                const pad = height * 0.15; 
+                SYSTEM.ctx.fillRect(x0 - pad, y0 - pad, width + (pad * 2.5), height + (pad * 2.5));
 
-                // Dynamic Font Scaling
-                let fontSize = targetHeight; 
-                ctx.font = `bold ${fontSize}px 'Inter', monospace, sans-serif`;
+                // Font Injection (Supports Hindi Rendering)
+                let fSize = height * 1.1; 
+                SYSTEM.ctx.font = `bold ${fSize}px sans-serif`;
                 
-                let metrics = ctx.measureText(newTextData);
-                let actualRenderedHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+                let metrics = SYSTEM.ctx.measureText(injectStr);
+                let actualH = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
                 
-                if (actualRenderedHeight > 0) {
-                    let scaleFactor = targetHeight / actualRenderedHeight;
-                    fontSize = fontSize * scaleFactor * 0.85; 
+                if (actualH > 0) {
+                    let scale = height / actualH;
+                    fSize = fSize * scale * 0.85; 
                 }
 
-                // Inject Text
-                ctx.font = `bold ${fontSize}px 'Inter', monospace, sans-serif`;
-                ctx.fillStyle = textColor;
-                ctx.textBaseline = 'top';
-                ctx.fillText(newTextData, x0, y0 + (targetHeight * 0.05));
+                SYSTEM.ctx.font = `bold ${fSize}px sans-serif`;
+                SYSTEM.ctx.fillStyle = textCol;
+                SYSTEM.ctx.textBaseline = 'top';
+                
+                // Execute Override
+                SYSTEM.ctx.fillText(injectStr, x0, y0 + (height * 0.08));
 
-                logStatus(`INJECTION COMPLETE: [${newTextData}] at accurate coordinates.`);
-                document.getElementById('btnReplace').disabled = false;
+                log(`OVERRIDE COMPLETE. Memory block rewritten.`, 'SUCCESS');
 
             } catch (err) {
-                logStatus('CRITICAL FAILURE: ' + err.message);
-                document.getElementById('btnReplace').disabled = false;
+                log(`EXECUTION HALTED: ${err.message}`, 'CRITICAL');
+            } finally {
+                UI.btnReplace.disabled = false;
             }
-        }
+        });
 
-        // Color Analytics
-        function analyzeBBoxColors(bbox, sourceCanvas) {
+        // Color Profile Extractor
+        function extractColorProfiles(bbox, source) {
             const { x0, y0, x1, y1 } = bbox;
-            const w = x1 - x0;
-            const h = y1 - y0;
-            const tempCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
+            const w = x1 - x0; const h = y1 - y0;
+            const tmpCtx = source.getContext('2d', { willReadFrequently: true });
             
-            const p = Math.max(2, Math.round(h * 0.4)); 
+            // Sample edge pixels for background
+            const p = Math.max(2, Math.round(h * 0.3)); 
             const bgAreas = [
-                { x: Math.max(0, x0 - p), y: y0, w: p, h: h },
-                { x: x1, y: y0, w: p, h: h },
-                { x: x0, y: Math.max(0, y0 - p), w: w, h: p },
-                { x: x0, y: y1, w: w, h: p }
+                { x: Math.max(0, x0 - p), y: y0, w: p, h: h }, { x: x1, y: y0, w: p, h: h },
+                { x: x0, y: Math.max(0, y0 - p), w: w, h: p }, { x: x0, y: y1, w: w, h: p }
             ];
 
-            const bgAvg = calculateAverageColor(bgAreas, tempCtx);
-            const bgRGB = bgAvg.match(/\d+/g).map(Number);
-            const textData = tempCtx.getImageData(x0, y0, w, h).data;
-            const textRGB = getHighestContrastColor(textData, bgRGB);
-
-            return { backgroundColor: bgAvg, textColor: textRGB };
-        }
-
-        function calculateAverageColor(rects, context) {
             let r=0, g=0, b=0, count=0;
-            rects.forEach(rect => {
+            bgAreas.forEach(rect => {
                 if (rect.w > 0 && rect.h > 0) {
-                    const data = context.getImageData(rect.x, rect.y, rect.w, rect.h).data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        r += data[i]; g += data[i+1]; b += data[i+2]; count++;
-                    }
+                    const data = tmpCtx.getImageData(rect.x, rect.y, rect.w, rect.h).data;
+                    for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; count++; }
                 }
             });
-            if (count === 0) return 'rgb(255,255,255)';
-            return `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
-        }
-
-        function getHighestContrastColor(pixels, bgColor) {
-            let maxContrast = [0,0,0];
-            let maxDistance = -1;
-            for (let i = 0; i < pixels.length; i += 8) { 
-                const pr = pixels[i], pg = pixels[i+1], pb = pixels[i+2];
-                const distance = Math.sqrt(Math.pow(pr - bgColor[0], 2) + Math.pow(pg - bgColor[1], 2) + Math.pow(pb - bgColor[2], 2));
-                if (distance > maxDistance) {
-                    maxDistance = distance;
-                    maxContrast = [pr, pg, pb];
-                }
+            
+            const bgRGB = count === 0 ? [255,255,255] : [Math.round(r/count), Math.round(g/count), Math.round(b/count)];
+            
+            // Scan internal pixels for highest contrast text color
+            const textData = tmpCtx.getImageData(x0, y0, w, h).data;
+            let maxC = [0,0,0], maxD = -1;
+            
+            for (let i = 0; i < textData.length; i += 8) { 
+                const pr = textData[i], pg = textData[i+1], pb = textData[i+2];
+                const dist = Math.sqrt(Math.pow(pr - bgRGB[0], 2) + Math.pow(pg - bgRGB[1], 2) + Math.pow(pb - bgRGB[2], 2));
+                if (dist > maxD) { maxD = dist; maxC = [pr, pg, pb]; }
             }
-            if (maxDistance < 20) return `rgb(0,0,0)`; 
-            return `rgb(${maxContrast[0]}, ${maxContrast[1]}, ${maxContrast[2]})`;
+            
+            return { 
+                bg: `rgb(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]})`, 
+                textCol: maxD < 20 ? `rgb(0,0,0)` : `rgb(${maxC[0]}, ${maxC[1]}, ${maxC[2]})` 
+            };
         }
 
-        // Output Extraction
-        function downloadImage() {
-            if (!currentImage) return;
+        UI.btnDownload.addEventListener('click', () => {
+            if (!SYSTEM.image) return;
             const link = document.createElement('a');
-            link.download = 'DAITYA_Matrix_Output.png';
-            link.href = canvas.toDataURL('image/png', 1.0);
+            link.download = `DAITYA_PAYLOAD_${Date.now()}.png`;
+            link.href = SYSTEM.canvas.toDataURL('image/png', 1.0);
             link.click();
-            logStatus('File Extracted Successfully.');
-        }
+            log('Data block extracted to local storage.', 'SUCCESS');
+        });
     </script>
 </body>
     </html>

@@ -3,481 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAITYA OS - Premium Editor</title>
+    <title>DAITYA - Elite Execution Terminal</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
     <style>
-        :root {
-            --bg-base: #030712;
-            --panel-bg: rgba(17, 24, 39, 0.7);
-            --accent: #6d28d9;
-            --accent-glow: rgba(109, 40, 217, 0.5);
-            --text-main: #f3f4f6;
-            --text-dim: #9ca3af;
-            --border: rgba(255, 255, 255, 0.08);
-            --success: #10b981;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* Pro-Level Dark Theme CSS */
+        :root { --primary: #8b5cf6; --primary-hover: #7c3aed; --ai: #ec4899; --ai-hover: #db2777; --success: #10b981; --success-hover: #059669; --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #f4f4f5; --text-muted: #a1a1aa; }
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: var(--surface); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); padding: 30px; border: 1px solid var(--border); }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        .header h1 { color: var(--primary); margin: 0 0 5px 0; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+        .header p { color: var(--text-muted); margin: 0; font-size: 13px; font-family: monospace;}
         
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: var(--bg-base);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(109, 40, 217, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .upload-section { border: 2px dashed var(--border); padding: 30px; text-align: center; border-radius: 8px; background: #09090b; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
+        .upload-section:hover { border-color: var(--primary); }
+        input[type="file"] { font-size: 14px; color: var(--text); }
 
-        .header { text-align: center; margin-bottom: 2rem; }
-        .header h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #a78bfa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px;}
-        .header p { color: var(--text-dim); font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 0.5rem;}
-
-        .layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; width: 100%; max-width: 1400px; }
-
-        .glass-panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .upload-zone {
-            border: 2px dashed rgba(109, 40, 217, 0.4);
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            background: rgba(0,0,0,0.2);
-            margin-bottom: 20px;
-        }
-        .upload-zone:hover { border-color: #a78bfa; background: rgba(109, 40, 217, 0.05); }
-        .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .upload-text { font-size: 1rem; color: var(--text-dim); font-weight: 600; }
-
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;}
+        .editor-panels { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+        .control-panel { background: #09090b; padding: 25px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .control-panel h3 { margin-top: 0; color: var(--text); font-size: 16px; margin-bottom: 20px;}
         
-        textarea {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 16px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 1rem;
-            resize: vertical;
-            min-height: 80px;
-            transition: all 0.2s;
-        }
-        textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
+        .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+        .input-group label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        input[type="text"], input[type="password"] { padding: 12px; background: #18181b; color: white; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; font-family: monospace;}
+        input[type="text"]:focus, input[type="password"]:focus { border-color: var(--primary); }
 
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 10px;
-            border: none;
-            font-family: inherit;
-            font-weight: 800;
-            font-size: 1rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-primary { background: linear-gradient(135deg, var(--accent), #4c1d95); color: white; box-shadow: 0 10px 20px -10px var(--accent); }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px -10px var(--accent); filter: brightness(1.1); }
-        .btn-success { background: linear-gradient(135deg, #059669, #047857); color: white; box-shadow: 0 10px 20px -10px #059669; }
-        .btn-success:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px -10px #059669; filter: brightness(1.1); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: #1f2937; color: #6b7280; }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 20px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .btn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; }
+        
+        .btn-ai { background: var(--ai); margin-bottom: 20px; }
+        .btn-ai:hover:not(:disabled) { background: var(--ai-hover); }
+        .btn-success { background: var(--success); }
+        .btn-success:hover:not(:disabled) { background: var(--success-hover); }
 
-        .status-bar {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: none;
-            backdrop-filter: blur(4px);
-        }
+        .ai-section { border: 1px solid rgba(236, 72, 153, 0.3); padding: 15px; border-radius: 6px; margin-bottom: 20px; background: rgba(236, 72, 153, 0.05); }
+        
+        #status { font-family: monospace; text-align: left; padding: 15px; border-radius: 6px; background: #000; color: #10b981; font-weight: bold; margin-bottom: 20px; display: none; font-size: 12px; border: 1px solid #10b981; word-wrap: break-word; }
+        
+        .result-panel { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; }
+        canvas { max-width: 100%; height: auto; display: block; }
 
-        .canvas-container {
-            width: 100%;
-            height: calc(100vh - 150px);
-            background: #000;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            overflow: auto;
-            position: relative;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .color-preview-box { display: flex; gap: 15px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); margin-bottom: 15px;}
+        .color-sample { width: 45px; height: 45px; border-radius: 6px; border: 1px solid var(--border); }
+        .color-label { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 8px; font-weight: bold; text-transform: uppercase; }
 
-        canvas {
-            cursor: crosshair;
-            max-width: 100%;
-            object-fit: contain;
-            transition: transform 0.1s;
-        }
-
-        .color-data {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-        .color-swatch { width: 40px; height: 40px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
-        .color-info { display: flex; flex-direction: column; justify-content: center;}
-        .color-info span { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;}
-        .color-info strong { font-size: 0.9rem; }
-
-        @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .canvas-container { height: 500px; } }
+        @media (max-width: 768px) { .editor-panels { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>DAITYA V2.0</h1>
-        <p>Premium Image Synthesis & Payload Injection</p>
-    </div>
-
-    <div class="layout">
-        <div class="glass-panel">
-            <div id="status" class="status-bar">> Awaiting Payload...</div>
-
-            <div class="upload-zone">
-                <input type="file" id="imageInput" accept="image/*">
-                <div class="upload-text">CLICK OR DROP IMAGE MATRIX</div>
-            </div>
-
-            <div class="form-group">
-                <label>Target Signature (Auto-Detected)</label>
-                <textarea id="sourceText" placeholder="Hover & click text on the image..." readonly></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>Injection Payload</label>
-                <textarea id="injectionText" placeholder="Enter override text here..."></textarea>
-            </div>
-
-            <div class="color-data">
-                <div style="display:flex; gap:10px;">
-                    <div id="bgSwatch" class="color-swatch" style="background: #111;"></div>
-                    <div class="color-info"><span>BG Mask</span><strong id="bgHex">#000000</strong></div>
-                </div>
-                <div style="display:flex; gap:10px; margin-left: auto;">
-                    <div class="color-info" style="text-align: right;"><span>Text Color</span><strong id="textHex">#FFFFFF</strong></div>
-                    <div id="textSwatch" class="color-swatch" style="background: #eee;"></div>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" id="btnExecute" onclick="executeInjection()" disabled>Deploy Override</button>
-            <button class="btn btn-success" id="btnExport" onclick="exportPayload()" disabled>Export Final Payload</button>
+    <div class="container">
+        <div class="header">
+            <h1>DAITYA Execution Terminal</h1>
+            <p>[ MODULE: STEALTH AI INJECTION & DEEP OCR ]</p>
         </div>
 
-        <div class="canvas-container">
-            <canvas id="mainCanvas"></canvas>
+        <div id="status"></div>
+
+        <div class="upload-section">
+            <input type="file" id="uploadImage" accept="image/*" />
+        </div>
+
+        <div class="editor-panels">
+            <div class="control-panel">
+                <h3>PAYLOAD CONFIGURATION</h3>
+                
+                <div class="ai-section">
+                    <div class="input-group">
+                        <label>Gemini Neural Key</label>
+                        <input type="password" id="apiKey" placeholder="AI API Key">
+                    </div>
+                    <div class="input-group">
+                        <label>Target String (To Find)</label>
+                        <input type="text" id="oldText" placeholder="e.g. TARGET">
+                    </div>
+                    <div class="input-group">
+                        <label>AI Prompt (Directive)</label>
+                        <input type="text" id="aiPrompt" placeholder="e.g. Translate context to Hindi">
+                    </div>
+                    <button class="btn btn-ai" id="btnAiGenerate" disabled>
+                        [ GENERATE AI PAYLOAD ]
+                    </button>
+                </div>
+
+                <div class="input-group">
+                    <label>Injection Text (Ready to deploy)</label>
+                    <input type="text" id="newText" placeholder="Waiting for AI output or manual input...">
+                </div>
+                
+                <button class="btn" id="btnReplace" disabled>
+                    [ EXECUTE OVERRIDE ]
+                </button>
+
+                <div class="color-preview-box">
+                    <div>
+                        <div id="sampleBackground" class="color-sample" style="background: #000;"></div>
+                        <div class="color-label">BG MASK</div>
+                    </div>
+                    <div>
+                        <div id="sampleText" class="color-sample" style="background: #fff;"></div>
+                        <div class="color-label">TEXT HEX</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" id="btnDownload" disabled>
+                    [ EXTRACT OUTPUT ]
+                </button>
+            </div>
+            
+            <div class="result-panel">
+                <canvas id="outputCanvas"></canvas>
+            </div>
         </div>
     </div>
 
-    <script>
-        const canvas = document.getElementById('mainCanvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        
-        let rawImage = null;
-        let memCanvas = null; 
-        let scanData = [];
-        let lockedTarget = null;
-        let hoverTarget = null;
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
 
-        const ui = {
-            status: document.getElementById('status'),
-            source: document.getElementById('sourceText'),
-            inject: document.getElementById('injectionText'),
-            btnExec: document.getElementById('btnExecute'),
-            btnExp: document.getElementById('btnExport'),
-            bgSwatch: document.getElementById('bgSwatch'),
-            textSwatch: document.getElementById('textSwatch'),
-            bgHex: document.getElementById('bgHex'),
-            textHex: document.getElementById('textHex')
+        // System State Variables
+        const SYSTEM = {
+            image: null,
+            originalCanvas: null,
+            canvas: document.getElementById('outputCanvas'),
+            ctx: document.getElementById('outputCanvas').getContext('2d', { willReadFrequently: true }),
+            statusEl: document.getElementById('status')
         };
 
-        function log(msg, isError = false) {
-            ui.status.style.display = 'block';
-            ui.status.style.color = isError ? '#ef4444' : '#34d399';
-            ui.status.style.background = isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)';
-            ui.status.style.border = `1px solid ${isError ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'}`;
-            ui.status.innerText = `> ${msg}`;
-        }
+        // DOM Elements
+        const UI = {
+            btnAi: document.getElementById('btnAiGenerate'),
+            btnReplace: document.getElementById('btnReplace'),
+            btnDownload: document.getElementById('btnDownload'),
+            upload: document.getElementById('uploadImage'),
+            apiKey: document.getElementById('apiKey'),
+            oldText: document.getElementById('oldText'),
+            newText: document.getElementById('newText'),
+            aiPrompt: document.getElementById('aiPrompt'),
+            bgSample: document.getElementById('sampleBackground'),
+            textSample: document.getElementById('sampleText')
+        };
 
-        function rgbToHex(r, g, b) {
-            return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
-        }
+        // --- CORE UTILS ---
+        
+        // Terminal Logger
+        const log = (msg, type = "INFO") => {
+            SYSTEM.statusEl.style.display = 'block';
+            const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+            SYSTEM.statusEl.innerHTML += `<div>[${timestamp}] [${type}] ${msg}</div>`;
+            SYSTEM.statusEl.scrollTop = SYSTEM.statusEl.scrollHeight;
+        };
 
-        // --- Core File Handling ---
-        document.getElementById('imageInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+        // Anti-Ban Stealth Jitter (Prevents API Rate-Limit Flags)
+        const stealthDelay = (min = 500, max = 1500) => {
+            const jitter = Math.floor(Math.random() * (max - min + 1) + min);
+            return new Promise(resolve => setTimeout(resolve, jitter));
+        };
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                rawImage = new Image();
-                rawImage.onload = async () => {
-                    // Set physical dimensions
-                    canvas.width = rawImage.width;
-                    canvas.height = rawImage.height;
-                    
-                    // Backup memory canvas for pure data read/writes
-                    memCanvas = document.createElement('canvas');
-                    memCanvas.width = rawImage.width;
-                    memCanvas.height = rawImage.height;
-                    memCanvas.getContext('2d', {willReadFrequently: true}).drawImage(rawImage, 0, 0);
-                    
-                    ctx.drawImage(rawImage, 0, 0);
-                    lockedTarget = null;
-                    ui.source.value = ''; ui.inject.value = '';
+        // --- MODULE: IMAGE PARSER ---
+        UI.upload.addEventListener('change', (e) => {
+            try {
+                const file = e.target.files[0];
+                if (!file) return;
 
-                    log('Analyzing matrix logic. Initializing Tesseract Engine...');
-                    ui.btnExec.disabled = true; ui.btnExp.disabled = true;
-
-                    try {
-                        const { data } = await Tesseract.recognize(memCanvas, 'eng+hin', {
-                            logger: m => { if(m.status === 'recognizing text') log(`Deep Scan: ${(m.progress * 100).toFixed(0)}%`); }
-                        });
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    SYSTEM.image = new Image();
+                    SYSTEM.image.onload = () => {
+                        SYSTEM.canvas.width = SYSTEM.image.width;
+                        SYSTEM.canvas.height = SYSTEM.image.height;
+                        SYSTEM.ctx.drawImage(SYSTEM.image, 0, 0);
                         
-                        // Filter out pure noise lines (confidence < 40 or empty)
-                        scanData = data.lines.filter(l => l.confidence > 40 && l.text.trim().length > 0);
-                        
-                        log('Analysis Complete. Hover over text to view, click to lock target.');
-                        ui.btnExp.disabled = false;
-                        
-                        // Setup interactions
-                        setupCanvasInteractions();
+                        SYSTEM.originalCanvas = document.createElement('canvas');
+                        SYSTEM.originalCanvas.width = SYSTEM.image.width;
+                        SYSTEM.originalCanvas.height = SYSTEM.image.height;
+                        SYSTEM.originalCanvas.getContext('2d').drawImage(SYSTEM.image, 0, 0);
 
-                    } catch (err) {
-                        log('Core Failure: ' + err.message, true);
-                    }
+                        log('Image parsed into memory matrix. Ready for deployment.', 'SUCCESS');
+                        UI.btnReplace.disabled = false;
+                        UI.btnDownload.disabled = false;
+                        UI.btnAi.disabled = false;
+                    };
+                    SYSTEM.image.src = event.target.result;
                 };
-                rawImage.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            } catch (err) {
+                log(`Image parsing failed: ${err.message}`, 'CRITICAL');
+            }
         });
 
-        // --- Interaction Engine ---
-        function getScale() {
-            const rect = canvas.getBoundingClientRect();
-            return { x: canvas.width / rect.width, y: canvas.height / rect.height, rect };
-        }
+        // --- MODULE: NEURAL AI ENGINE (Advanced Context Injection) ---
+        UI.btnAi.addEventListener('click', async () => {
+            const key = UI.apiKey.value.trim();
+            const target = UI.oldText.value.trim();
+            const prompt = UI.aiPrompt.value.trim();
 
-        function setupCanvasInteractions() {
-            canvas.onmousemove = (e) => {
-                if(lockedTarget) return; // Freeze hover if locked
-                
-                const s = getScale();
-                const mx = (e.clientX - s.rect.left) * s.x;
-                const my = (e.clientY - s.rect.top) * s.y;
-
-                hoverTarget = scanData.find(l => mx >= l.bbox.x0 && mx <= l.bbox.x1 && my >= l.bbox.y0 && my <= l.bbox.y1);
-                
-                renderView(); // Redraw
-            };
-
-            canvas.onclick = (e) => {
-                if(!hoverTarget && !lockedTarget) return;
-
-                if(lockedTarget) {
-                    // Unlock if clicking outside
-                    const s = getScale();
-                    const mx = (e.clientX - s.rect.left) * s.x;
-                    const my = (e.clientY - s.rect.top) * s.y;
-                    const l = lockedTarget.bbox;
-                    if(mx < l.x0 || mx > l.x1 || my < l.y0 || my > l.y1) {
-                        lockedTarget = null;
-                        ui.source.value = ''; ui.inject.value = '';
-                        ui.btnExec.disabled = true;
-                        log('Target unlocked.');
-                        renderView();
-                        return;
-                    }
-                }
-
-                if(hoverTarget) {
-                    lockedTarget = hoverTarget;
-                    hoverTarget = null;
-                    
-                    const cleanText = lockedTarget.text.trim().replace(/\n/g, ' ');
-                    ui.source.value = cleanText;
-                    ui.inject.value = cleanText;
-                    ui.btnExec.disabled = false;
-                    
-                    extractColors(lockedTarget.bbox);
-                    log('Target Signature Locked. Enter Injection Payload.');
-                    renderView();
-                }
-            };
-        }
-
-        function renderView() {
-            // Restore from memory
-            ctx.drawImage(memCanvas, 0, 0);
-            
-            // Draw hover rect
-            if(hoverTarget && !lockedTarget) {
-                ctx.fillStyle = 'rgba(167, 139, 250, 0.2)';
-                ctx.fillRect(hoverTarget.bbox.x0, hoverTarget.bbox.y0, hoverTarget.bbox.x1 - hoverTarget.bbox.x0, hoverTarget.bbox.y1 - hoverTarget.bbox.y0);
-                canvas.style.cursor = 'pointer';
-            } else {
-                canvas.style.cursor = 'crosshair';
+            if (!key || !target || !prompt) {
+                log('Missing parameters. Require Key, Target, and Prompt.', 'ERROR');
+                return;
             }
-
-            // Draw locked rect
-            if(lockedTarget) {
-                const b = lockedTarget.bbox;
-                ctx.strokeStyle = '#a78bfa';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(b.x0 - 4, b.y0 - 4, (b.x1 - b.x0) + 8, (b.y1 - b.y0) + 8);
-                
-                // Add lock icon/corner accents
-                ctx.fillStyle = '#a78bfa';
-                ctx.fillRect(b.x0 - 6, b.y0 - 6, 12, 12);
-                ctx.fillRect(b.x1 - 6, b.y0 - 6, 12, 12);
-                ctx.fillRect(b.x0 - 6, b.y1 - 6, 12, 12);
-                ctx.fillRect(b.x1 - 6, b.y1 - 6, 12, 12);
-            }
-        }
-
-        // --- Advanced Color Engine ---
-        let currentColors = { bg: 'rgb(0,0,0)', text: 'rgb(255,255,255)' };
-
-        function extractColors(bbox) {
-            const mCtx = memCanvas.getContext('2d', {willReadFrequently:true});
-            const p = 4; // padding sample
-            
-            // Background sampling from edges
-            const bgPixels = [];
-            const w = bbox.x1 - bbox.x0;
-            const h = bbox.y1 - bbox.y0;
 
             try {
-                // Top & Bottom strips
-                bgPixels.push(...mCtx.getImageData(bbox.x0, Math.max(0, bbox.y0 - p), w, p).data);
-                bgPixels.push(...mCtx.getImageData(bbox.x0, bbox.y1, w, p).data);
-            } catch(e){}
+                UI.btnAi.disabled = true;
+                log('Establishing secure connection to Neural Engine...', 'SYSTEM');
+                
+                // Anti-Ban Delay before hitting API
+                await stealthDelay(800, 1800);
+
+                const genAI = new GoogleGenerativeAI(key);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+                // Advanced Prompting Structure
+                const sysInstruction = `You are a strict data transformation API. Your job is to replace or alter text based on instructions. Never output conversational text. Output ONLY the final transformed string.`;
+                const query = `${sysInstruction}\n\nTask: ${prompt}\nOriginal Text: "${target}"\nGenerate the exact replacement text:`;
+                
+                const result = await model.generateContent(query);
+                const responseText = result.response.text().trim().replace(/^"|"$/g, ''); // Strip accidental quotes
+
+                UI.newText.value = responseText;
+                log(`Payload Generated & Injected: [ ${responseText} ]`, 'SUCCESS');
+                
+            } catch (err) {
+                log(`AI ENGINE FAILURE: ${err.message}`, 'CRITICAL');
+            } finally {
+                UI.btnAi.disabled = false;
+            }
+        });
+
+        // --- MODULE: DEEP OCR & OVERRIDE EXECUTION ---
+        UI.btnReplace.addEventListener('click', async () => {
+            if (!SYSTEM.image || !SYSTEM.originalCanvas) return;
+            
+            const targetStr = UI.oldText.value.trim();
+            const injectStr = UI.newText.value;
+
+            if (!targetStr || !injectStr) {
+                log('Target or Injection string missing.', 'ERROR');
+                return;
+            }
+
+            try {
+                UI.btnReplace.disabled = true;
+                SYSTEM.ctx.drawImage(SYSTEM.originalCanvas, 0, 0); // Reset canvas
+                
+                log('Deploying Deep OCR Matrix...', 'SYSTEM');
+                
+                // OCR Execution
+                const { data: { words } } = await Tesseract.recognize(
+                    SYSTEM.originalCanvas, 'eng', { logger: m => { if(m.status === 'recognizing text' && m.progress === 1) log('OCR Scan Complete.', 'INFO') } }
+                );
+
+                const targetWord = words.find(w => w.text.toLowerCase().includes(targetStr.toLowerCase()));
+
+                if (!targetWord) {
+                    throw new Error(`Target string [${targetStr}] not found in pixel matrix.`);
+                }
+
+                log(`Target locked at coordinates. Calculating color profiles...`, 'INFO');
+                const bbox = targetWord.bbox;
+                const { x0, y0, x1, y1 } = bbox;
+                const width = x1 - x0;
+                const height = y1 - y0;
+
+                // Extraction
+                const { bg, textCol } = extractColorProfiles(bbox, SYSTEM.originalCanvas);
+                UI.bgSample.style.background = bg;
+                UI.textSample.style.background = textCol;
+
+                // Masking (Erase Original)
+                SYSTEM.ctx.fillStyle = bg;
+                const pad = height * 0.15; 
+                SYSTEM.ctx.fillRect(x0 - pad, y0 - pad, width + (pad * 2.5), height + (pad * 2.5));
+
+                // Font injection mechanics
+                let fSize = height * 1.1; 
+                SYSTEM.ctx.font = `bold ${fSize}px 'Inter', sans-serif`;
+                
+                let metrics = SYSTEM.ctx.measureText(injectStr);
+                let actualH = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+                
+                if (actualH > 0) {
+                    let scale = height / actualH;
+                    fSize = fSize * scale * 0.90; 
+                }
+
+                // Final Write
+                SYSTEM.ctx.font = `bold ${fSize}px 'Inter', sans-serif`;
+                SYSTEM.ctx.fillStyle = textCol;
+                SYSTEM.ctx.textBaseline = 'top';
+                SYSTEM.ctx.fillText(injectStr, x0, y0 + (height * 0.05));
+
+                log(`OVERRIDE COMPLETE. Payload successfully injected.`, 'SUCCESS');
+
+            } catch (err) {
+                log(`EXECUTION FAILED: ${err.message}`, 'CRITICAL');
+            } finally {
+                UI.btnReplace.disabled = false;
+            }
+        });
+
+        // --- CORE MATH: COLOR ANALYTICS ---
+        function extractColorProfiles(bbox, source) {
+            const { x0, y0, x1, y1 } = bbox;
+            const w = x1 - x0; const h = y1 - y0;
+            const tmpCtx = source.getContext('2d', { willReadFrequently: true });
+            
+            // Sample edges for background
+            const p = Math.max(2, Math.round(h * 0.4)); 
+            const bgAreas = [
+                { x: Math.max(0, x0 - p), y: y0, w: p, h: h },
+                { x: x1, y: y0, w: p, h: h },
+                { x: x0, y: Math.max(0, y0 - p), w: w, h: p },
+                { x: x0, y: y1, w: w, h: p }
+            ];
 
             let r=0, g=0, b=0, count=0;
-            for(let i=0; i<bgPixels.length; i+=4) {
-                r+=bgPixels[i]; g+=bgPixels[i+1]; b+=bgPixels[i+2]; count++;
-            }
-            const bgR = count ? Math.round(r/count) : 0;
-            const bgG = count ? Math.round(g/count) : 0;
-            const bgB = count ? Math.round(b/count) : 0;
-
-            currentColors.bg = `rgb(${bgR},${bgG},${bgB})`;
-            
-            // Update UI
-            const hexBG = rgbToHex(bgR, bgG, bgB);
-            ui.bgSwatch.style.background = hexBG;
-            ui.bgHex.innerText = hexBG;
-
-            // Text color sampling (highest contrast)
-            let maxDist = 0;
-            let tr=255, tg=255, tb=255;
-            try {
-                const textData = mCtx.getImageData(bbox.x0, bbox.y0, w, h).data;
-                for(let i=0; i<textData.length; i+=4) {
-                    const pr = textData[i], pg = textData[i+1], pb = textData[i+2];
-                    const dist = Math.abs(pr-bgR) + Math.abs(pg-bgG) + Math.abs(pb-bgB);
-                    if(dist > maxDist) {
-                        maxDist = dist; tr = pr; tg = pg; tb = pb;
-                    }
+            bgAreas.forEach(rect => {
+                if (rect.w > 0 && rect.h > 0) {
+                    const data = tmpCtx.getImageData(rect.x, rect.y, rect.w, rect.h).data;
+                    for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; count++; }
                 }
-            } catch(e){}
-
-            currentColors.text = `rgb(${tr},${tg},${tb})`;
-            const hexText = rgbToHex(tr, tg, tb);
-            ui.textSwatch.style.background = hexText;
-            ui.textHex.innerText = hexText;
-        }
-
-        // --- Injection Execution ---
-        function executeInjection() {
-            if(!lockedTarget) return;
-
-            const payload = ui.inject.value;
-            const b = lockedTarget.bbox;
-            const targetHeight = b.y1 - b.y0;
-            const targetWidth = b.x1 - b.x0;
+            });
             
-            const mCtx = memCanvas.getContext('2d', {willReadFrequently:true});
+            const bgRGB = count === 0 ? [255,255,255] : [Math.round(r/count), Math.round(g/count), Math.round(b/count)];
+            const bgStr = `rgb(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]})`;
 
-            // 1. Wipe Original Matrix Area
-            mCtx.fillStyle = currentColors.bg;
-            // Pad slightly to remove artifacts
-            const padY = targetHeight * 0.15;
-            const padX = targetWidth * 0.05;
-            mCtx.fillRect(b.x0 - padX, b.y0 - padY, targetWidth + (padX*2), targetHeight + (padY*2));
-
-            // 2. Compute Exact Typography Metrics
-            // Fallback to standard sans-serif to avoid font rendering glitches
-            let fontSize = targetHeight * 0.82; 
-            mCtx.font = `600 ${fontSize}px Arial, sans-serif`;
-            mCtx.fillStyle = currentColors.text;
-            mCtx.textBaseline = 'top';
-
-            // Check if string fits width, if not, compress horizontally
-            const textMetrics = mCtx.measureText(payload);
-            let scaleX = 1;
-            if(textMetrics.width > (targetWidth + padX)) {
-                scaleX = (targetWidth + padX) / textMetrics.width;
+            // Sample center for text (Highest contrast to BG)
+            const textData = tmpCtx.getImageData(x0, y0, w, h).data;
+            let maxC = [0,0,0], maxD = -1;
+            
+            for (let i = 0; i < textData.length; i += 8) { 
+                const pr = textData[i], pg = textData[i+1], pb = textData[i+2];
+                const dist = Math.sqrt(Math.pow(pr - bgRGB[0], 2) + Math.pow(pg - bgRGB[1], 2) + Math.pow(pb - bgRGB[2], 2));
+                if (dist > maxD) { maxD = dist; maxC = [pr, pg, pb]; }
             }
-
-            // 3. Inject
-            mCtx.save();
-            mCtx.translate(b.x0, b.y0 + (targetHeight * 0.08)); // Vertical tweak
-            mCtx.scale(scaleX, 1);
-            mCtx.fillText(payload, 0, 0);
-            mCtx.restore();
-
-            // Clear lock and refresh
-            lockedTarget = null;
-            ui.source.value = ''; ui.inject.value = '';
-            ui.btnExec.disabled = true;
-            log('Override Injected Successfully.');
-            renderView();
+            
+            const textStr = maxD < 20 ? `rgb(0,0,0)` : `rgb(${maxC[0]}, ${maxC[1]}, ${maxC[2]})`;
+            return { bg: bgStr, textCol: textStr };
         }
 
-        function exportPayload() {
-            if(!memCanvas) return;
-            const link = document.createElement('a');
-            link.download = `DAITYA_OS_PAYLOAD_${Date.now()}.png`;
-            link.href = memCanvas.toDataURL('image/png', 1.0);
-            link.click();
-            log('Payload Data Exfiltrated (Downloaded).');
-        }
+        // --- MODULE: EXTRACTION ---
+        UI.btnDownload.addEventListener('click', () => {
+            try {
+                if (!SYSTEM.image) return;
+                const link = document.createElement('a');
+                link.download = `DAITYA_PAYLOAD_${Date.now()}.png`;
+                link.href = SYSTEM.canvas.toDataURL('image/png', 1.0);
+                link.click();
+                log('Asset successfully extracted to local drive.', 'SUCCESS');
+            } catch(err) {
+                log(`Extraction failed: ${err.message}`, 'CRITICAL');
+            }
+        });
     </script>
 </body>
-    </html>
-    
+</html>

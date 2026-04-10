@@ -13,7 +13,6 @@
       }
     </script>
     <style>
-        /* Pro-Level Dark Theme CSS */
         :root { --primary: #8b5cf6; --primary-hover: #7c3aed; --ai: #ec4899; --ai-hover: #db2777; --success: #10b981; --success-hover: #059669; --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #f4f4f5; --text-muted: #a1a1aa; }
         body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; }
         .container { max-width: 1000px; margin: 0 auto; background: var(--surface); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); padding: 30px; border: 1px solid var(--border); }
@@ -45,7 +44,7 @@
 
         .ai-section { border: 1px solid rgba(236, 72, 153, 0.3); padding: 15px; border-radius: 6px; margin-bottom: 20px; background: rgba(236, 72, 153, 0.05); }
         
-        #status { font-family: monospace; text-align: left; padding: 15px; border-radius: 6px; background: #000; color: #10b981; font-weight: bold; margin-bottom: 20px; display: none; font-size: 12px; border: 1px solid #10b981; word-wrap: break-word; }
+        #status { font-family: monospace; text-align: left; padding: 15px; border-radius: 6px; background: #000; color: #10b981; font-weight: bold; margin-bottom: 20px; display: none; font-size: 12px; border: 1px solid #10b981; word-wrap: break-word; max-height: 150px; overflow-y: auto; }
         
         .result-panel { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; }
         canvas { max-width: 100%; height: auto; display: block; }
@@ -62,7 +61,7 @@
     <div class="container">
         <div class="header">
             <h1>DAITYA Execution Terminal</h1>
-            <p>[ MODULE: STEALTH AI INJECTION & DEEP OCR ]</p>
+            <p>[ MODULE: STEALTH AI INJECTION & DEEP OCR V2.0 ]</p>
         </div>
 
         <div id="status"></div>
@@ -127,7 +126,7 @@
     <script type="module">
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
-        // System State Variables
+        // System State
         const SYSTEM = {
             image: null,
             originalCanvas: null,
@@ -136,7 +135,6 @@
             statusEl: document.getElementById('status')
         };
 
-        // DOM Elements
         const UI = {
             btnAi: document.getElementById('btnAiGenerate'),
             btnReplace: document.getElementById('btnReplace'),
@@ -150,23 +148,19 @@
             textSample: document.getElementById('sampleText')
         };
 
-        // --- CORE UTILS ---
-        
         // Terminal Logger
         const log = (msg, type = "INFO") => {
             SYSTEM.statusEl.style.display = 'block';
             const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
-            SYSTEM.statusEl.innerHTML += `<div>[${timestamp}] [${type}] ${msg}</div>`;
+            SYSTEM.statusEl.innerHTML += `<div style="margin-bottom:4px; color:${type === 'CRITICAL' ? '#ef4444' : (type === 'SUCCESS' ? '#10b981' : '#3b82f6')}">[${timestamp}] [${type}] ${msg}</div>`;
             SYSTEM.statusEl.scrollTop = SYSTEM.statusEl.scrollHeight;
         };
 
-        // Anti-Ban Stealth Jitter (Prevents API Rate-Limit Flags)
-        const stealthDelay = (min = 500, max = 1500) => {
-            const jitter = Math.floor(Math.random() * (max - min + 1) + min);
-            return new Promise(resolve => setTimeout(resolve, jitter));
-        };
+        const stealthDelay = (min = 500, max = 1500) => new Promise(res => setTimeout(res, Math.floor(Math.random() * (max - min + 1) + min)));
 
-        // --- MODULE: IMAGE PARSER ---
+        // Text Sanitizer for Master Match (Removes Punctuation/Noise)
+        const sanitizeText = (str) => str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
         UI.upload.addEventListener('change', (e) => {
             try {
                 const file = e.target.files[0];
@@ -185,7 +179,7 @@
                         SYSTEM.originalCanvas.height = SYSTEM.image.height;
                         SYSTEM.originalCanvas.getContext('2d').drawImage(SYSTEM.image, 0, 0);
 
-                        log('Image parsed into memory matrix. Ready for deployment.', 'SUCCESS');
+                        log('Image matrix loaded. Deep Scan available.', 'SUCCESS');
                         UI.btnReplace.disabled = false;
                         UI.btnDownload.disabled = false;
                         UI.btnAi.disabled = false;
@@ -198,37 +192,28 @@
             }
         });
 
-        // --- MODULE: NEURAL AI ENGINE (Advanced Context Injection) ---
         UI.btnAi.addEventListener('click', async () => {
             const key = UI.apiKey.value.trim();
             const target = UI.oldText.value.trim();
             const prompt = UI.aiPrompt.value.trim();
 
-            if (!key || !target || !prompt) {
-                log('Missing parameters. Require Key, Target, and Prompt.', 'ERROR');
-                return;
-            }
+            if (!key || !target || !prompt) return log('Missing Neural Config. Require Key, Target, and Prompt.', 'CRITICAL');
 
             try {
                 UI.btnAi.disabled = true;
-                log('Establishing secure connection to Neural Engine...', 'SYSTEM');
-                
-                // Anti-Ban Delay before hitting API
-                await stealthDelay(800, 1800);
+                log('Initiating secure handshake with Gemini Engine...', 'INFO');
+                await stealthDelay(800, 1500);
 
                 const genAI = new GoogleGenerativeAI(key);
                 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-                // Advanced Prompting Structure
-                const sysInstruction = `You are a strict data transformation API. Your job is to replace or alter text based on instructions. Never output conversational text. Output ONLY the final transformed string.`;
-                const query = `${sysInstruction}\n\nTask: ${prompt}\nOriginal Text: "${target}"\nGenerate the exact replacement text:`;
+                const sysInstruction = `You are an automated payload generator. Alter text exactly as instructed. Output MUST be the raw text string only. No explanation. No quotes.`;
+                const query = `${sysInstruction}\n\nTask: ${prompt}\nOriginal: "${target}"\nReplacement:`;
                 
                 const result = await model.generateContent(query);
-                const responseText = result.response.text().trim().replace(/^"|"$/g, ''); // Strip accidental quotes
-
-                UI.newText.value = responseText;
-                log(`Payload Generated & Injected: [ ${responseText} ]`, 'SUCCESS');
+                UI.newText.value = result.response.text().trim().replace(/^"|"$/g, '');
                 
+                log(`AI Payload Generated: [ ${UI.newText.value} ]`, 'SUCCESS');
             } catch (err) {
                 log(`AI ENGINE FAILURE: ${err.message}`, 'CRITICAL');
             } finally {
@@ -236,53 +221,56 @@
             }
         });
 
-        // --- MODULE: DEEP OCR & OVERRIDE EXECUTION ---
+        // MASTER-LEVEL OCR OVERRIDE V2.0
         UI.btnReplace.addEventListener('click', async () => {
             if (!SYSTEM.image || !SYSTEM.originalCanvas) return;
             
             const targetStr = UI.oldText.value.trim();
             const injectStr = UI.newText.value;
 
-            if (!targetStr || !injectStr) {
-                log('Target or Injection string missing.', 'ERROR');
-                return;
-            }
+            if (!targetStr || !injectStr) return log('Missing Execution Parameters.', 'CRITICAL');
 
             try {
                 UI.btnReplace.disabled = true;
-                SYSTEM.ctx.drawImage(SYSTEM.originalCanvas, 0, 0); // Reset canvas
+                SYSTEM.ctx.drawImage(SYSTEM.originalCanvas, 0, 0); 
+                log('Initializing Deep OCR Engine. Scanning pixel data...', 'INFO');
                 
-                log('Deploying Deep OCR Matrix...', 'SYSTEM');
-                
-                // OCR Execution
                 const { data: { words } } = await Tesseract.recognize(
-                    SYSTEM.originalCanvas, 'eng', { logger: m => { if(m.status === 'recognizing text' && m.progress === 1) log('OCR Scan Complete.', 'INFO') } }
+                    SYSTEM.originalCanvas, 'eng', { logger: m => { if(m.status === 'recognizing text' && m.progress === 1) log('OCR Matrix Scan 100%. Processing data...', 'INFO') } }
                 );
 
-                const targetWord = words.find(w => w.text.toLowerCase().includes(targetStr.toLowerCase()));
+                const cleanTarget = sanitizeText(targetStr);
+                
+                // Advanced Fuzzy Search Logic
+                const targetWord = words.find(w => {
+                    const cleanW = sanitizeText(w.text);
+                    return cleanW.length > 1 && (cleanW.includes(cleanTarget) || cleanTarget.includes(cleanW));
+                });
 
                 if (!targetWord) {
-                    throw new Error(`Target string [${targetStr}] not found in pixel matrix.`);
+                    // Fail-safe: Show user what the machine actually read
+                    const detectedList = words.slice(0, 8).map(w => w.text).join(', ');
+                    throw new Error(`Target [${targetStr}] bypass failed. OCR read: [${detectedList}...]. Check image clarity or spelling.`);
                 }
 
-                log(`Target locked at coordinates. Calculating color profiles...`, 'INFO');
+                log(`Target [${targetWord.text}] locked. Extracting profiles...`, 'SUCCESS');
+                
                 const bbox = targetWord.bbox;
                 const { x0, y0, x1, y1 } = bbox;
                 const width = x1 - x0;
                 const height = y1 - y0;
 
-                // Extraction
                 const { bg, textCol } = extractColorProfiles(bbox, SYSTEM.originalCanvas);
                 UI.bgSample.style.background = bg;
                 UI.textSample.style.background = textCol;
 
-                // Masking (Erase Original)
+                // Erase Logic
                 SYSTEM.ctx.fillStyle = bg;
                 const pad = height * 0.15; 
                 SYSTEM.ctx.fillRect(x0 - pad, y0 - pad, width + (pad * 2.5), height + (pad * 2.5));
 
-                // Font injection mechanics
-                let fSize = height * 1.1; 
+                // Injection Formatting
+                let fSize = height * 1.05; 
                 SYSTEM.ctx.font = `bold ${fSize}px 'Inter', sans-serif`;
                 
                 let metrics = SYSTEM.ctx.measureText(injectStr);
@@ -290,37 +278,34 @@
                 
                 if (actualH > 0) {
                     let scale = height / actualH;
-                    fSize = fSize * scale * 0.90; 
+                    fSize = fSize * scale * 0.85; // Adjusted scaling coefficient 
                 }
 
-                // Final Write
                 SYSTEM.ctx.font = `bold ${fSize}px 'Inter', sans-serif`;
                 SYSTEM.ctx.fillStyle = textCol;
                 SYSTEM.ctx.textBaseline = 'top';
-                SYSTEM.ctx.fillText(injectStr, x0, y0 + (height * 0.05));
+                
+                // Final execution
+                SYSTEM.ctx.fillText(injectStr, x0, y0 + (height * 0.08));
 
-                log(`OVERRIDE COMPLETE. Payload successfully injected.`, 'SUCCESS');
+                log(`OVERRIDE COMPLETE. Memory block rewritten.`, 'SUCCESS');
 
             } catch (err) {
-                log(`EXECUTION FAILED: ${err.message}`, 'CRITICAL');
+                log(`EXECUTION HALTED: ${err.message}`, 'CRITICAL');
             } finally {
                 UI.btnReplace.disabled = false;
             }
         });
 
-        // --- CORE MATH: COLOR ANALYTICS ---
         function extractColorProfiles(bbox, source) {
             const { x0, y0, x1, y1 } = bbox;
             const w = x1 - x0; const h = y1 - y0;
             const tmpCtx = source.getContext('2d', { willReadFrequently: true });
             
-            // Sample edges for background
             const p = Math.max(2, Math.round(h * 0.4)); 
             const bgAreas = [
-                { x: Math.max(0, x0 - p), y: y0, w: p, h: h },
-                { x: x1, y: y0, w: p, h: h },
-                { x: x0, y: Math.max(0, y0 - p), w: w, h: p },
-                { x: x0, y: y1, w: w, h: p }
+                { x: Math.max(0, x0 - p), y: y0, w: p, h: h }, { x: x1, y: y0, w: p, h: h },
+                { x: x0, y: Math.max(0, y0 - p), w: w, h: p }, { x: x0, y: y1, w: w, h: p }
             ];
 
             let r=0, g=0, b=0, count=0;
@@ -332,9 +317,7 @@
             });
             
             const bgRGB = count === 0 ? [255,255,255] : [Math.round(r/count), Math.round(g/count), Math.round(b/count)];
-            const bgStr = `rgb(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]})`;
-
-            // Sample center for text (Highest contrast to BG)
+            
             const textData = tmpCtx.getImageData(x0, y0, w, h).data;
             let maxC = [0,0,0], maxD = -1;
             
@@ -344,22 +327,19 @@
                 if (dist > maxD) { maxD = dist; maxC = [pr, pg, pb]; }
             }
             
-            const textStr = maxD < 20 ? `rgb(0,0,0)` : `rgb(${maxC[0]}, ${maxC[1]}, ${maxC[2]})`;
-            return { bg: bgStr, textCol: textStr };
+            return { 
+                bg: `rgb(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]})`, 
+                textCol: maxD < 20 ? `rgb(0,0,0)` : `rgb(${maxC[0]}, ${maxC[1]}, ${maxC[2]})` 
+            };
         }
 
-        // --- MODULE: EXTRACTION ---
         UI.btnDownload.addEventListener('click', () => {
-            try {
-                if (!SYSTEM.image) return;
-                const link = document.createElement('a');
-                link.download = `DAITYA_PAYLOAD_${Date.now()}.png`;
-                link.href = SYSTEM.canvas.toDataURL('image/png', 1.0);
-                link.click();
-                log('Asset successfully extracted to local drive.', 'SUCCESS');
-            } catch(err) {
-                log(`Extraction failed: ${err.message}`, 'CRITICAL');
-            }
+            if (!SYSTEM.image) return;
+            const link = document.createElement('a');
+            link.download = `DAITYA_PAYLOAD_${Date.now()}.png`;
+            link.href = SYSTEM.canvas.toDataURL('image/png', 1.0);
+            link.click();
+            log('Data block extracted to local storage.', 'SUCCESS');
         });
     </script>
 </body>

@@ -3,55 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAITYA - Elite Execution Terminal</title>
+    <title>DAITYA - Advanced Image Text Bypass</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
     <style>
-        :root { --primary: #8b5cf6; --primary-hover: #7c3aed; --ai: #ec4899; --ai-hover: #db2777; --success: #10b981; --success-hover: #059669; --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #f4f4f5; --text-muted: #a1a1aa; }
-        body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: var(--surface); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); padding: 30px; border: 1px solid var(--border); }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-        .header h1 { color: var(--primary); margin: 0 0 5px 0; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
-        .header p { color: var(--text-muted); margin: 0; font-size: 13px; font-family: monospace;}
+        :root { --primary: #eab308; --primary-hover: #ca8a04; --success: #10b981; --success-hover: #059669; --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #fafafa; --text-muted: #a1a1aa; }
+        body { font-family: 'Inter', monospace, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; }
+        .container { max-width: 1100px; margin: 0 auto; background: var(--surface); border-radius: 12px; box-shadow: 0 0 50px rgba(234, 179, 8, 0.1); padding: 30px; border: 1px solid var(--border); }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px;}
+        .header h1 { color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+        .header p { color: var(--text-muted); margin: 0; font-size: 13px; }
         
-        .upload-section { border: 2px dashed var(--border); padding: 30px; text-align: center; border-radius: 8px; background: #09090b; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
+        .upload-section { border: 2px dashed #3f3f46; padding: 30px; text-align: center; border-radius: 8px; background: #09090b; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
         .upload-section:hover { border-color: var(--primary); }
-        input[type="file"] { font-size: 14px; color: var(--text); }
+        input[type="file"] { font-size: 15px; color: var(--text); }
 
-        .editor-panels { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
-        .control-panel { background: #09090b; padding: 25px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-        .control-panel h3 { margin-top: 0; color: var(--text); font-size: 16px; margin-bottom: 20px;}
+        .editor-panels { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .control-panel { background: #09090b; padding: 20px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .control-panel h3 { margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 10px; font-size: 15px;}
         
-        .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
-        .input-group label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-        input[type="text"], input[type="password"] { padding: 12px; background: #18181b; color: white; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; font-family: monospace;}
-        input[type="text"]:focus, input[type="password"]:focus { border-color: var(--primary); }
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .input-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;}
+        input[type="text"] { padding: 12px; background: #18181b; color: white; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; font-family: monospace;}
+        input[type="text"]:focus { border-color: var(--primary); }
 
-        .btn { background: var(--primary); color: white; border: none; padding: 14px 20px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        .btn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
-        .btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; }
+        .btn { background: var(--primary); color: black; border: none; padding: 14px 20px; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase; margin-bottom: 10px; font-family: monospace;}
+        .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; transform: none; }
         
-        .btn-ai { background: var(--ai); margin-bottom: 20px; }
-        .btn-ai:hover:not(:disabled) { background: var(--ai-hover); }
-        .btn-success { background: var(--success); }
-        .btn-success:hover:not(:disabled) { background: var(--success-hover); }
+        .btn-success { background: var(--success); color: white;}
+        .btn-success:hover { background: var(--success-hover); }
 
-        .ai-section { border: 1px solid rgba(236, 72, 153, 0.3); padding: 15px; border-radius: 6px; margin-bottom: 20px; background: rgba(236, 72, 153, 0.05); }
+        #status { text-align: left; padding: 15px; border-radius: 6px; background: #000; color: var(--primary); font-weight: bold; margin-bottom: 20px; display: none; font-size: 13px; border: 1px solid #3f3f46; font-family: monospace; white-space: pre-wrap;}
         
-        #status { font-family: monospace; text-align: left; padding: 15px; border-radius: 6px; background: #000; color: #10b981; font-weight: bold; margin-bottom: 20px; display: none; font-size: 12px; border: 1px solid #10b981; word-wrap: break-word; max-height: 150px; overflow-y: auto; }
-        
-        .result-panel { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; }
+        .result-panel { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; position: relative;}
         canvas { max-width: 100%; height: auto; display: block; }
 
-        .color-preview-box { display: flex; gap: 15px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); margin-bottom: 15px;}
-        .color-sample { width: 45px; height: 45px; border-radius: 6px; border: 1px solid var(--border); }
-        .color-label { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 8px; font-weight: bold; text-transform: uppercase; }
+        .color-preview-box { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); margin-bottom: 15px;}
+        .color-sample { width: 40px; height: 40px; border-radius: 6px; border: 1px solid #3f3f46; }
+        .color-label { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 6px; font-weight: bold;}
 
         @media (max-width: 768px) { .editor-panels { grid-template-columns: 1fr; } }
     </style>
@@ -60,11 +49,11 @@
 
     <div class="container">
         <div class="header">
-            <h1>DAITYA Execution Terminal</h1>
-            <p>[ MODULE: STEALTH AI INJECTION & DEEP OCR V2.0 ]</p>
+            <h1>DAITYA V4 - Neural Core</h1>
+            <p>Module: Levenshtein Fuzzy Matching | Punctuation Stripping | Auto-Color | Scale Bypass</p>
         </div>
 
-        <div id="status"></div>
+        <div id="status">> SYSTEM BOOT SEQUENCE INITIATED...</div>
 
         <div class="upload-section">
             <input type="file" id="uploadImage" accept="image/*" />
@@ -72,32 +61,17 @@
 
         <div class="editor-panels">
             <div class="control-panel">
-                <h3>PAYLOAD CONFIGURATION</h3>
-                
-                <div class="ai-section">
-                    <div class="input-group">
-                        <label>Gemini Neural Key</label>
-                        <input type="password" id="apiKey" placeholder="AI API Key">
-                    </div>
-                    <div class="input-group">
-                        <label>Target String (To Find)</label>
-                        <input type="text" id="oldText" placeholder="e.g. TARGET">
-                    </div>
-                    <div class="input-group">
-                        <label>AI Prompt (Directive)</label>
-                        <input type="text" id="aiPrompt" placeholder="e.g. Translate context to Hindi">
-                    </div>
-                    <button class="btn btn-ai" id="btnAiGenerate" disabled>
-                        [ GENERATE AI PAYLOAD ]
-                    </button>
-                </div>
-
+                <h3>Payload Configuration</h3>
                 <div class="input-group">
-                    <label>Injection Text (Ready to deploy)</label>
-                    <input type="text" id="newText" placeholder="Waiting for AI output or manual input...">
+                    <label>Target Text (Fuzzy Supported)</label>
+                    <input type="text" id="oldText" placeholder="e.g. TARGET">
+                </div>
+                <div class="input-group">
+                    <label>Injection Text</label>
+                    <input type="text" id="newText" placeholder="e.g. BYPASS">
                 </div>
                 
-                <button class="btn" id="btnReplace" disabled>
+                <button class="btn" id="btnReplace" onclick="processTextReplacement()" disabled>
                     [ EXECUTE OVERRIDE ]
                 </button>
 
@@ -112,7 +86,7 @@
                     </div>
                 </div>
 
-                <button class="btn btn-success" id="btnDownload" disabled>
+                <button class="btn btn-success" id="btnDownload" onclick="downloadImage()" disabled>
                     [ EXTRACT OUTPUT ]
                 </button>
             </div>
@@ -123,224 +97,242 @@
         </div>
     </div>
 
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
+    <script>
+        let currentImage = null;
+        let originalCanvas = null; 
+        const statusEl = document.getElementById('status');
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-        // System State
-        const SYSTEM = {
-            image: null,
-            originalCanvas: null,
-            canvas: document.getElementById('outputCanvas'),
-            ctx: document.getElementById('outputCanvas').getContext('2d', { willReadFrequently: true }),
-            statusEl: document.getElementById('status')
-        };
+        function logStatus(msg) {
+            statusEl.style.display = 'block';
+            statusEl.innerText += '\n> ' + msg;
+            statusEl.scrollTop = statusEl.scrollHeight;
+        }
 
-        const UI = {
-            btnAi: document.getElementById('btnAiGenerate'),
-            btnReplace: document.getElementById('btnReplace'),
-            btnDownload: document.getElementById('btnDownload'),
-            upload: document.getElementById('uploadImage'),
-            apiKey: document.getElementById('apiKey'),
-            oldText: document.getElementById('oldText'),
-            newText: document.getElementById('newText'),
-            aiPrompt: document.getElementById('aiPrompt'),
-            bgSample: document.getElementById('sampleBackground'),
-            textSample: document.getElementById('sampleText')
-        };
+        function clearLog() {
+            statusEl.innerText = '> Execution Log Started...';
+        }
 
-        // Terminal Logger
-        const log = (msg, type = "INFO") => {
-            SYSTEM.statusEl.style.display = 'block';
-            const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
-            SYSTEM.statusEl.innerHTML += `<div style="margin-bottom:4px; color:${type === 'CRITICAL' ? '#ef4444' : (type === 'SUCCESS' ? '#10b981' : '#3b82f6')}">[${timestamp}] [${type}] ${msg}</div>`;
-            SYSTEM.statusEl.scrollTop = SYSTEM.statusEl.scrollHeight;
-        };
+        // Levenshtein Distance Algorithm (Fuzzy Match Logic)
+        function levenshtein(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            var matrix = [];
+            for (var i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (var j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (var i = 1; i <= b.length; i++) {
+                for (var j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
 
-        const stealthDelay = (min = 500, max = 1500) => new Promise(res => setTimeout(res, Math.floor(Math.random() * (max - min + 1) + min)));
+        // Punctuation Stripper Logic
+        function cleanString(str) {
+            // Removes everything except alphabets and numbers
+            return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
 
-        // Text Sanitizer for Master Match (Removes Punctuation/Noise)
-        const sanitizeText = (str) => str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-
-        UI.upload.addEventListener('change', (e) => {
-            try {
-                const file = e.target.files[0];
-                if (!file) return;
-
+        // Image Upload
+        document.getElementById('uploadImage').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    SYSTEM.image = new Image();
-                    SYSTEM.image.onload = () => {
-                        SYSTEM.canvas.width = SYSTEM.image.width;
-                        SYSTEM.canvas.height = SYSTEM.image.height;
-                        SYSTEM.ctx.drawImage(SYSTEM.image, 0, 0);
+                reader.onload = function(event) {
+                    currentImage = new Image();
+                    currentImage.onload = function() {
+                        canvas.width = currentImage.width;
+                        canvas.height = currentImage.height;
+                        ctx.drawImage(currentImage, 0, 0);
                         
-                        SYSTEM.originalCanvas = document.createElement('canvas');
-                        SYSTEM.originalCanvas.width = SYSTEM.image.width;
-                        SYSTEM.originalCanvas.height = SYSTEM.image.height;
-                        SYSTEM.originalCanvas.getContext('2d').drawImage(SYSTEM.image, 0, 0);
+                        originalCanvas = document.createElement('canvas');
+                        originalCanvas.width = currentImage.width;
+                        originalCanvas.height = currentImage.height;
+                        originalCanvas.getContext('2d').drawImage(currentImage, 0, 0);
 
-                        log('Image matrix loaded. Deep Scan available.', 'SUCCESS');
-                        UI.btnReplace.disabled = false;
-                        UI.btnDownload.disabled = false;
-                        UI.btnAi.disabled = false;
+                        clearLog();
+                        logStatus('Image matrix loaded into memory.');
+                        document.getElementById('btnReplace').disabled = false;
+                        document.getElementById('btnDownload').disabled = false;
                     };
-                    SYSTEM.image.src = event.target.result;
+                    currentImage.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
-            } catch (err) {
-                log(`Image parsing failed: ${err.message}`, 'CRITICAL');
             }
         });
 
-        UI.btnAi.addEventListener('click', async () => {
-            const key = UI.apiKey.value.trim();
-            const target = UI.oldText.value.trim();
-            const prompt = UI.aiPrompt.value.trim();
+        // OCR and Replacement Logic
+        async function processTextReplacement() {
+            if (!currentImage || !originalCanvas) return;
+            const rawTargetText = document.getElementById('oldText').value;
+            const newTextData = document.getElementById('newText').value;
 
-            if (!key || !target || !prompt) return log('Missing Neural Config. Require Key, Target, and Prompt.', 'CRITICAL');
-
-            try {
-                UI.btnAi.disabled = true;
-                log('Initiating secure handshake with Gemini Engine...', 'INFO');
-                await stealthDelay(800, 1500);
-
-                const genAI = new GoogleGenerativeAI(key);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-                const sysInstruction = `You are an automated payload generator. Alter text exactly as instructed. Output MUST be the raw text string only. No explanation. No quotes.`;
-                const query = `${sysInstruction}\n\nTask: ${prompt}\nOriginal: "${target}"\nReplacement:`;
-                
-                const result = await model.generateContent(query);
-                UI.newText.value = result.response.text().trim().replace(/^"|"$/g, '');
-                
-                log(`AI Payload Generated: [ ${UI.newText.value} ]`, 'SUCCESS');
-            } catch (err) {
-                log(`AI ENGINE FAILURE: ${err.message}`, 'CRITICAL');
-            } finally {
-                UI.btnAi.disabled = false;
+            if (!rawTargetText) {
+                logStatus('ERROR: Missing target text payload.');
+                return;
             }
-        });
 
-        // MASTER-LEVEL OCR OVERRIDE V2.0
-        UI.btnReplace.addEventListener('click', async () => {
-            if (!SYSTEM.image || !SYSTEM.originalCanvas) return;
-            
-            const targetStr = UI.oldText.value.trim();
-            const injectStr = UI.newText.value;
-
-            if (!targetStr || !injectStr) return log('Missing Execution Parameters.', 'CRITICAL');
+            clearLog();
+            const cleanTargetText = cleanString(rawTargetText);
 
             try {
-                UI.btnReplace.disabled = true;
-                SYSTEM.ctx.drawImage(SYSTEM.originalCanvas, 0, 0); 
-                log('Initializing Deep OCR Engine. Scanning pixel data...', 'INFO');
-                
+                ctx.drawImage(originalCanvas, 0, 0);
+                logStatus('Initializing Deep OCR Engine...');
+                document.getElementById('btnReplace').disabled = true;
+
                 const { data: { words } } = await Tesseract.recognize(
-                    SYSTEM.originalCanvas, 'eng', { logger: m => { if(m.status === 'recognizing text' && m.progress === 1) log('OCR Matrix Scan 100%. Processing data...', 'INFO') } }
+                    originalCanvas, 'eng', { logger: m => { if(m.status === 'recognizing text') console.log(m.progress); } }
                 );
 
-                const cleanTarget = sanitizeText(targetStr);
+                logStatus('Applying Punctuation Stripping & Fuzzy Matrix...');
                 
-                // Advanced Fuzzy Search Logic
-                const targetWord = words.find(w => {
-                    const cleanW = sanitizeText(w.text);
-                    return cleanW.length > 1 && (cleanW.includes(cleanTarget) || cleanTarget.includes(cleanW));
-                });
+                // Advanced Word Search with Fuzzy Logic
+                let targetWord = null;
+                let matchType = "NONE";
 
-                if (!targetWord) {
-                    // Fail-safe: Show user what the machine actually read
-                    const detectedList = words.slice(0, 8).map(w => w.text).join(', ');
-                    throw new Error(`Target [${targetStr}] bypass failed. OCR read: [${detectedList}...]. Check image clarity or spelling.`);
+                for (let w of words) {
+                    let rawOCRWord = w.text;
+                    let cleanOCRWord = cleanString(rawOCRWord);
+                    
+                    if (!cleanOCRWord) continue;
+
+                    // 1. Exact Match after stripping
+                    if (cleanOCRWord === cleanTargetText) {
+                        targetWord = w;
+                        matchType = "EXACT";
+                        break;
+                    }
+
+                    // 2. Fuzzy Match (Levenshtein bypass)
+                    // Calculate dynamic tolerance: longer words allow more OCR errors
+                    let allowedErrors = cleanTargetText.length <= 3 ? 0 : (cleanTargetText.length <= 5 ? 1 : 2);
+                    let distance = levenshtein(cleanOCRWord, cleanTargetText);
+                    
+                    if (distance <= allowedErrors) {
+                        targetWord = w;
+                        matchType = `FUZZY (Distance: ${distance}, OCR Read: [${rawOCRWord}])`;
+                        break;
+                    }
                 }
 
-                log(`Target [${targetWord.text}] locked. Extracting profiles...`, 'SUCCESS');
-                
+                if (!targetWord) {
+                    logStatus(`ERROR: Target [${rawTargetText}] bypassed detection matrix. Not found.`);
+                    document.getElementById('btnReplace').disabled = false;
+                    return;
+                }
+
+                logStatus(`Target Locked! Match Protocol: ${matchType}`);
                 const bbox = targetWord.bbox;
                 const { x0, y0, x1, y1 } = bbox;
                 const width = x1 - x0;
-                const height = y1 - y0;
+                const targetHeight = y1 - y0;
 
-                const { bg, textCol } = extractColorProfiles(bbox, SYSTEM.originalCanvas);
-                UI.bgSample.style.background = bg;
-                UI.textSample.style.background = textCol;
+                // Color Extraction
+                logStatus('Extracting localized color hexes...');
+                const { backgroundColor, textColor } = analyzeBBoxColors(bbox, originalCanvas);
+                document.getElementById('sampleBackground').style.background = backgroundColor;
+                document.getElementById('sampleText').style.background = textColor;
 
-                // Erase Logic
-                SYSTEM.ctx.fillStyle = bg;
-                const pad = height * 0.15; 
-                SYSTEM.ctx.fillRect(x0 - pad, y0 - pad, width + (pad * 2.5), height + (pad * 2.5));
+                // Erase Old Text
+                ctx.fillStyle = backgroundColor;
+                const maskPadding = targetHeight * 0.15; 
+                ctx.fillRect(x0 - maskPadding, y0 - maskPadding, width + (maskPadding*2), targetHeight + (maskPadding*2));
 
-                // Injection Formatting
-                let fSize = height * 1.05; 
-                SYSTEM.ctx.font = `bold ${fSize}px 'Inter', sans-serif`;
+                // Dynamic Font Scaling
+                let fontSize = targetHeight; 
+                ctx.font = `bold ${fontSize}px 'Inter', monospace, sans-serif`;
                 
-                let metrics = SYSTEM.ctx.measureText(injectStr);
-                let actualH = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+                let metrics = ctx.measureText(newTextData);
+                let actualRenderedHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
                 
-                if (actualH > 0) {
-                    let scale = height / actualH;
-                    fSize = fSize * scale * 0.85; // Adjusted scaling coefficient 
+                if (actualRenderedHeight > 0) {
+                    let scaleFactor = targetHeight / actualRenderedHeight;
+                    fontSize = fontSize * scaleFactor * 0.85; 
                 }
 
-                SYSTEM.ctx.font = `bold ${fSize}px 'Inter', sans-serif`;
-                SYSTEM.ctx.fillStyle = textCol;
-                SYSTEM.ctx.textBaseline = 'top';
-                
-                // Final execution
-                SYSTEM.ctx.fillText(injectStr, x0, y0 + (height * 0.08));
+                // Inject Text
+                ctx.font = `bold ${fontSize}px 'Inter', monospace, sans-serif`;
+                ctx.fillStyle = textColor;
+                ctx.textBaseline = 'top';
+                ctx.fillText(newTextData, x0, y0 + (targetHeight * 0.05));
 
-                log(`OVERRIDE COMPLETE. Memory block rewritten.`, 'SUCCESS');
+                logStatus(`INJECTION COMPLETE: [${newTextData}] at accurate coordinates.`);
+                document.getElementById('btnReplace').disabled = false;
 
             } catch (err) {
-                log(`EXECUTION HALTED: ${err.message}`, 'CRITICAL');
-            } finally {
-                UI.btnReplace.disabled = false;
+                logStatus('CRITICAL FAILURE: ' + err.message);
+                document.getElementById('btnReplace').disabled = false;
             }
-        });
+        }
 
-        function extractColorProfiles(bbox, source) {
+        // Color Analytics
+        function analyzeBBoxColors(bbox, sourceCanvas) {
             const { x0, y0, x1, y1 } = bbox;
-            const w = x1 - x0; const h = y1 - y0;
-            const tmpCtx = source.getContext('2d', { willReadFrequently: true });
+            const w = x1 - x0;
+            const h = y1 - y0;
+            const tempCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
             
             const p = Math.max(2, Math.round(h * 0.4)); 
             const bgAreas = [
-                { x: Math.max(0, x0 - p), y: y0, w: p, h: h }, { x: x1, y: y0, w: p, h: h },
-                { x: x0, y: Math.max(0, y0 - p), w: w, h: p }, { x: x0, y: y1, w: w, h: p }
+                { x: Math.max(0, x0 - p), y: y0, w: p, h: h },
+                { x: x1, y: y0, w: p, h: h },
+                { x: x0, y: Math.max(0, y0 - p), w: w, h: p },
+                { x: x0, y: y1, w: w, h: p }
             ];
 
-            let r=0, g=0, b=0, count=0;
-            bgAreas.forEach(rect => {
-                if (rect.w > 0 && rect.h > 0) {
-                    const data = tmpCtx.getImageData(rect.x, rect.y, rect.w, rect.h).data;
-                    for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; count++; }
-                }
-            });
-            
-            const bgRGB = count === 0 ? [255,255,255] : [Math.round(r/count), Math.round(g/count), Math.round(b/count)];
-            
-            const textData = tmpCtx.getImageData(x0, y0, w, h).data;
-            let maxC = [0,0,0], maxD = -1;
-            
-            for (let i = 0; i < textData.length; i += 8) { 
-                const pr = textData[i], pg = textData[i+1], pb = textData[i+2];
-                const dist = Math.sqrt(Math.pow(pr - bgRGB[0], 2) + Math.pow(pg - bgRGB[1], 2) + Math.pow(pb - bgRGB[2], 2));
-                if (dist > maxD) { maxD = dist; maxC = [pr, pg, pb]; }
-            }
-            
-            return { 
-                bg: `rgb(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]})`, 
-                textCol: maxD < 20 ? `rgb(0,0,0)` : `rgb(${maxC[0]}, ${maxC[1]}, ${maxC[2]})` 
-            };
+            const bgAvg = calculateAverageColor(bgAreas, tempCtx);
+            const bgRGB = bgAvg.match(/\d+/g).map(Number);
+            const textData = tempCtx.getImageData(x0, y0, w, h).data;
+            const textRGB = getHighestContrastColor(textData, bgRGB);
+
+            return { backgroundColor: bgAvg, textColor: textRGB };
         }
 
-        UI.btnDownload.addEventListener('click', () => {
-            if (!SYSTEM.image) return;
+        function calculateAverageColor(rects, context) {
+            let r=0, g=0, b=0, count=0;
+            rects.forEach(rect => {
+                if (rect.w > 0 && rect.h > 0) {
+                    const data = context.getImageData(rect.x, rect.y, rect.w, rect.h).data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        r += data[i]; g += data[i+1]; b += data[i+2]; count++;
+                    }
+                }
+            });
+            if (count === 0) return 'rgb(255,255,255)';
+            return `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
+        }
+
+        function getHighestContrastColor(pixels, bgColor) {
+            let maxContrast = [0,0,0];
+            let maxDistance = -1;
+            for (let i = 0; i < pixels.length; i += 8) { 
+                const pr = pixels[i], pg = pixels[i+1], pb = pixels[i+2];
+                const distance = Math.sqrt(Math.pow(pr - bgColor[0], 2) + Math.pow(pg - bgColor[1], 2) + Math.pow(pb - bgColor[2], 2));
+                if (distance > maxDistance) {
+                    maxDistance = distance;
+                    maxContrast = [pr, pg, pb];
+                }
+            }
+            if (maxDistance < 20) return `rgb(0,0,0)`; 
+            return `rgb(${maxContrast[0]}, ${maxContrast[1]}, ${maxContrast[2]})`;
+        }
+
+        // Output Extraction
+        function downloadImage() {
+            if (!currentImage) return;
             const link = document.createElement('a');
-            link.download = `DAITYA_PAYLOAD_${Date.now()}.png`;
-            link.href = SYSTEM.canvas.toDataURL('image/png', 1.0);
+            link.download = 'DAITYA_Matrix_Output.png';
+            link.href = canvas.toDataURL('image/png', 1.0);
             link.click();
-            log('Data block extracted to local storage.', 'SUCCESS');
-        });
+            logStatus('File Extracted Successfully.');
+        }
     </script>
 </body>
-</html>
+    </html>
+    

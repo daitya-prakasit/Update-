@@ -3,337 +3,481 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAITYA - Image Text Editor (Pro Version)</title>
+    <title>DAITYA OS - Premium Editor</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #8b5cf6; --primary-hover: #7c3aed; --success: #10b981; --success-hover: #059669; --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #f8fafc; --text-muted: #94a3b8; }
-        body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: var(--surface); border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); padding: 30px; border: 1px solid var(--border); }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: var(--primary); margin: 0 0 10px 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .header p { color: var(--text-muted); margin: 0; font-size: 14px; }
+        :root {
+            --bg-base: #030712;
+            --panel-bg: rgba(17, 24, 39, 0.7);
+            --accent: #6d28d9;
+            --accent-glow: rgba(109, 40, 217, 0.5);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+            --border: rgba(255, 255, 255, 0.08);
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        .upload-section { border: 2px dashed var(--border); padding: 30px; text-align: center; border-radius: 12px; background: #0f172a; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
-        .upload-section:hover { border-color: var(--primary); }
-        input[type="file"] { font-size: 15px; color: var(--text); }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(109, 40, 217, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        .editor-panels { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
-        .control-panel { background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-        .control-panel h3 { margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #a78bfa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px;}
+        .header p { color: var(--text-dim); font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 0.5rem;}
+
+        .layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; width: 100%; max-width: 1400px; }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(109, 40, 217, 0.4);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .upload-zone:hover { border-color: #a78bfa; background: rgba(109, 40, 217, 0.05); }
+        .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .upload-text { font-size: 1rem; color: var(--text-dim); font-weight: 600; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;}
         
-        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-        .input-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-        textarea { padding: 12px; background: #1e293b; color: white; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; font-family: inherit; resize: vertical; min-height: 60px;}
-        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.2s;
+        }
+        textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
 
-        .btn { background: var(--primary); color: white; border: none; padding: 14px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; margin-bottom: 10px;}
-        .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
-        .btn:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; transform: none; }
-        
-        .btn-success { background: var(--success); }
-        .btn-success:hover { background: var(--success-hover); }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), #4c1d95); color: white; box-shadow: 0 10px 20px -10px var(--accent); }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px -10px var(--accent); filter: brightness(1.1); }
+        .btn-success { background: linear-gradient(135deg, #059669, #047857); color: white; box-shadow: 0 10px 20px -10px #059669; }
+        .btn-success:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px -10px #059669; filter: brightness(1.1); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: #1f2937; color: #6b7280; }
 
-        #status { text-align: center; padding: 15px; border-radius: 8px; background: #020617; color: #10b981; font-weight: bold; margin-bottom: 20px; display: none; font-size: 13px; border: 1px solid #10b981;}
-        
-        .result-panel { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; position: relative; cursor: crosshair;}
-        canvas { max-width: 100%; height: auto; display: block; }
+        .status-bar {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: none;
+            backdrop-filter: blur(4px);
+        }
 
-        .color-preview-box { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); margin-bottom: 15px;}
-        .color-sample { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); }
-        .color-label { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 6px; font-weight: bold;}
+        .canvas-container {
+            width: 100%;
+            height: calc(100vh - 150px);
+            background: #000;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            overflow: auto;
+            position: relative;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        @media (max-width: 768px) { .editor-panels { grid-template-columns: 1fr; } }
+        canvas {
+            cursor: crosshair;
+            max-width: 100%;
+            object-fit: contain;
+            transition: transform 0.1s;
+        }
+
+        .color-data {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .color-swatch { width: 40px; height: 40px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        .color-info { display: flex; flex-direction: column; justify-content: center;}
+        .color-info span { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;}
+        .color-info strong { font-size: 0.9rem; }
+
+        @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .canvas-container { height: 500px; } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1>DAITYA Execution Terminal</h1>
-            <p>Module: Full Line Selection | Exact Position | Exact Match</p>
+    <div class="header">
+        <h1>DAITYA V2.0</h1>
+        <p>Premium Image Synthesis & Payload Injection</p>
+    </div>
+
+    <div class="layout">
+        <div class="glass-panel">
+            <div id="status" class="status-bar">> Awaiting Payload...</div>
+
+            <div class="upload-zone">
+                <input type="file" id="imageInput" accept="image/*">
+                <div class="upload-text">CLICK OR DROP IMAGE MATRIX</div>
+            </div>
+
+            <div class="form-group">
+                <label>Target Signature (Auto-Detected)</label>
+                <textarea id="sourceText" placeholder="Hover & click text on the image..." readonly></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Injection Payload</label>
+                <textarea id="injectionText" placeholder="Enter override text here..."></textarea>
+            </div>
+
+            <div class="color-data">
+                <div style="display:flex; gap:10px;">
+                    <div id="bgSwatch" class="color-swatch" style="background: #111;"></div>
+                    <div class="color-info"><span>BG Mask</span><strong id="bgHex">#000000</strong></div>
+                </div>
+                <div style="display:flex; gap:10px; margin-left: auto;">
+                    <div class="color-info" style="text-align: right;"><span>Text Color</span><strong id="textHex">#FFFFFF</strong></div>
+                    <div id="textSwatch" class="color-swatch" style="background: #eee;"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="btnExecute" onclick="executeInjection()" disabled>Deploy Override</button>
+            <button class="btn btn-success" id="btnExport" onclick="exportPayload()" disabled>Export Final Payload</button>
         </div>
 
-        <div id="status">> System initialized. Waiting for payload (Image).</div>
-
-        <div class="upload-section">
-            <input type="file" id="uploadImage" accept="image/*" />
-        </div>
-
-        <div class="editor-panels">
-            <div class="control-panel">
-                <h3>Replacement Parameters</h3>
-                <div class="input-group">
-                    <label>Selected Line Target</label>
-                    <textarea id="oldText" placeholder="Click any text on the image to select the whole line..." readonly></textarea>
-                </div>
-                <div class="input-group">
-                    <label>Injection Text</label>
-                    <textarea id="newText" placeholder="Type new text here..."></textarea>
-                </div>
-                
-                <button class="btn" id="btnReplace" onclick="processTextReplacement()" disabled>
-                    [ EXECUTE OVERRIDE ]
-                </button>
-
-                <div class="color-preview-box">
-                    <div>
-                        <div id="sampleBackground" class="color-sample" style="background: #000;"></div>
-                        <div class="color-label">BG MASK</div>
-                    </div>
-                    <div>
-                        <div id="sampleText" class="color-sample" style="background: #fff;"></div>
-                        <div class="color-label">TEXT HEX</div>
-                    </div>
-                </div>
-
-                <button class="btn btn-success" id="btnDownload" onclick="downloadImage()" disabled>
-                    [ DOWNLOAD OUTPUT ]
-                </button>
-            </div>
-            
-            <div class="result-panel">
-                <canvas id="outputCanvas"></canvas>
-            </div>
+        <div class="canvas-container">
+            <canvas id="mainCanvas"></canvas>
         </div>
     </div>
 
     <script>
-        let currentImage = null;
-        let originalCanvas = null; 
-        let recognizedLines = [];
-        let selectedLine = null;
-
-        const statusEl = document.getElementById('status');
-        const canvas = document.getElementById('outputCanvas');
+        const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        let rawImage = null;
+        let memCanvas = null; 
+        let scanData = [];
+        let lockedTarget = null;
+        let hoverTarget = null;
 
-        function logStatus(msg) {
-            statusEl.style.display = 'block';
-            statusEl.innerText = '> ' + msg;
+        const ui = {
+            status: document.getElementById('status'),
+            source: document.getElementById('sourceText'),
+            inject: document.getElementById('injectionText'),
+            btnExec: document.getElementById('btnExecute'),
+            btnExp: document.getElementById('btnExport'),
+            bgSwatch: document.getElementById('bgSwatch'),
+            textSwatch: document.getElementById('textSwatch'),
+            bgHex: document.getElementById('bgHex'),
+            textHex: document.getElementById('textHex')
+        };
+
+        function log(msg, isError = false) {
+            ui.status.style.display = 'block';
+            ui.status.style.color = isError ? '#ef4444' : '#34d399';
+            ui.status.style.background = isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+            ui.status.style.border = `1px solid ${isError ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'}`;
+            ui.status.innerText = `> ${msg}`;
         }
 
-        // Image Upload Handler
-        document.getElementById('uploadImage').addEventListener('change', (e) => {
+        function rgbToHex(r, g, b) {
+            return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
+        }
+
+        // --- Core File Handling ---
+        document.getElementById('imageInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    currentImage = new Image();
-                    currentImage.onload = async function() {
-                        canvas.width = currentImage.width;
-                        canvas.height = currentImage.height;
-                        ctx.drawImage(currentImage, 0, 0);
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                rawImage = new Image();
+                rawImage.onload = async () => {
+                    // Set physical dimensions
+                    canvas.width = rawImage.width;
+                    canvas.height = rawImage.height;
+                    
+                    // Backup memory canvas for pure data read/writes
+                    memCanvas = document.createElement('canvas');
+                    memCanvas.width = rawImage.width;
+                    memCanvas.height = rawImage.height;
+                    memCanvas.getContext('2d', {willReadFrequently: true}).drawImage(rawImage, 0, 0);
+                    
+                    ctx.drawImage(rawImage, 0, 0);
+                    lockedTarget = null;
+                    ui.source.value = ''; ui.inject.value = '';
+
+                    log('Analyzing matrix logic. Initializing Tesseract Engine...');
+                    ui.btnExec.disabled = true; ui.btnExp.disabled = true;
+
+                    try {
+                        const { data } = await Tesseract.recognize(memCanvas, 'eng+hin', {
+                            logger: m => { if(m.status === 'recognizing text') log(`Deep Scan: ${(m.progress * 100).toFixed(0)}%`); }
+                        });
                         
-                        originalCanvas = document.createElement('canvas');
-                        originalCanvas.width = currentImage.width;
-                        originalCanvas.height = currentImage.height;
-                        originalCanvas.getContext('2d', { willReadFrequently: true }).drawImage(currentImage, 0, 0);
-
-                        selectedLine = null;
-                        document.getElementById('oldText').value = '';
-                        document.getElementById('newText').value = '';
-
-                        logStatus('Scanning pixel matrix for text lines... Please wait.');
-                        document.getElementById('uploadImage').disabled = true;
-
-                        try {
-                            const { data: { lines } } = await Tesseract.recognize(
-                                originalCanvas, 'eng+hin', { logger: m => {
-                                    if(m.status === 'recognizing text') logStatus(`Scanning... ${Math.round(m.progress * 100)}%`);
-                                }}
-                            );
-                            recognizedLines = lines;
-
-                            // --- Hardcoded Fix for User's Mismatch ---
-                            // Iterate through recognized lines to find fragmented symbol noise
-                            // This identifies ': | hs ps ¥ : "og' and replaces it with standard text
-                            const targetMisread = ': | hs ps ¥ : "og';
-                            recognizedLines.forEach(line => {
-                                if (line.text.trim() === targetMisread) {
-                                    // Replace the noise with logical field name and value
-                                    line.text = 'field_id: generic_id_v1';
-                                }
-                            });
-                            // --- End Hardcoded Fix ---
-
-                            logStatus('Scan complete. Click on any text to lock the entire line.');
-                            document.getElementById('btnReplace').disabled = false;
-                            document.getElementById('btnDownload').disabled = false;
-                        } catch (err) {
-                            logStatus('OCR Scan Failed: ' + err.message);
-                        }
+                        // Filter out pure noise lines (confidence < 40 or empty)
+                        scanData = data.lines.filter(l => l.confidence > 40 && l.text.trim().length > 0);
                         
-                        document.getElementById('uploadImage').disabled = false;
-                    };
-                    currentImage.src = event.target.result;
+                        log('Analysis Complete. Hover over text to view, click to lock target.');
+                        ui.btnExp.disabled = false;
+                        
+                        // Setup interactions
+                        setupCanvasInteractions();
+
+                    } catch (err) {
+                        log('Core Failure: ' + err.message, true);
+                    }
                 };
-                reader.readAsDataURL(file);
-            }
+                rawImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         });
 
-        // Click to Select Entire Line
-        canvas.addEventListener('click', (e) => {
-            if (recognizedLines.length === 0) return;
-
+        // --- Interaction Engine ---
+        function getScale() {
             const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
+            return { x: canvas.width / rect.width, y: canvas.height / rect.height, rect };
+        }
 
-            // Clear previous highlights
-            ctx.drawImage(originalCanvas, 0, 0);
-
-            // Find which line was clicked
-            selectedLine = recognizedLines.find(line => {
-                return x >= line.bbox.x0 && x <= line.bbox.x1 && y >= line.bbox.y0 && y <= line.bbox.y1;
-            });
-
-            if (selectedLine) {
-                // Highlight the whole line bounding box
-                ctx.strokeStyle = '#8b5cf6';
-                ctx.lineWidth = 3;
-                const pad = 2;
-                ctx.strokeRect(
-                    selectedLine.bbox.x0 - pad, 
-                    selectedLine.bbox.y0 - pad, 
-                    (selectedLine.bbox.x1 - selectedLine.bbox.x0) + (pad*2), 
-                    (selectedLine.bbox.y1 - selectedLine.bbox.y0) + (pad*2)
-                );
-
-                const cleanText = selectedLine.text.trim();
-                document.getElementById('oldText').value = cleanText;
-                document.getElementById('newText').value = cleanText; // Pre-fill with old text for easy editing
-                document.getElementById('newText').focus();
+        function setupCanvasInteractions() {
+            canvas.onmousemove = (e) => {
+                if(lockedTarget) return; // Freeze hover if locked
                 
-                logStatus(`Line locked. Edit text and click Execute.`);
+                const s = getScale();
+                const mx = (e.clientX - s.rect.left) * s.x;
+                const my = (e.clientY - s.rect.top) * s.y;
+
+                hoverTarget = scanData.find(l => mx >= l.bbox.x0 && mx <= l.bbox.x1 && my >= l.bbox.y0 && my <= l.bbox.y1);
+                
+                renderView(); // Redraw
+            };
+
+            canvas.onclick = (e) => {
+                if(!hoverTarget && !lockedTarget) return;
+
+                if(lockedTarget) {
+                    // Unlock if clicking outside
+                    const s = getScale();
+                    const mx = (e.clientX - s.rect.left) * s.x;
+                    const my = (e.clientY - s.rect.top) * s.y;
+                    const l = lockedTarget.bbox;
+                    if(mx < l.x0 || mx > l.x1 || my < l.y0 || my > l.y1) {
+                        lockedTarget = null;
+                        ui.source.value = ''; ui.inject.value = '';
+                        ui.btnExec.disabled = true;
+                        log('Target unlocked.');
+                        renderView();
+                        return;
+                    }
+                }
+
+                if(hoverTarget) {
+                    lockedTarget = hoverTarget;
+                    hoverTarget = null;
+                    
+                    const cleanText = lockedTarget.text.trim().replace(/\n/g, ' ');
+                    ui.source.value = cleanText;
+                    ui.inject.value = cleanText;
+                    ui.btnExec.disabled = false;
+                    
+                    extractColors(lockedTarget.bbox);
+                    log('Target Signature Locked. Enter Injection Payload.');
+                    renderView();
+                }
+            };
+        }
+
+        function renderView() {
+            // Restore from memory
+            ctx.drawImage(memCanvas, 0, 0);
+            
+            // Draw hover rect
+            if(hoverTarget && !lockedTarget) {
+                ctx.fillStyle = 'rgba(167, 139, 250, 0.2)';
+                ctx.fillRect(hoverTarget.bbox.x0, hoverTarget.bbox.y0, hoverTarget.bbox.x1 - hoverTarget.bbox.x0, hoverTarget.bbox.y1 - hoverTarget.bbox.y0);
+                canvas.style.cursor = 'pointer';
             } else {
-                document.getElementById('oldText').value = '';
-                document.getElementById('newText').value = '';
-                logStatus('Selection cleared.');
-            }
-        });
-
-        // Replacement Logic
-        function processTextReplacement() {
-            if (!currentImage || !originalCanvas || !selectedLine) {
-                logStatus('ERROR: No line selected.');
-                return;
+                canvas.style.cursor = 'crosshair';
             }
 
-            const newTextData = document.getElementById('newText').value;
+            // Draw locked rect
+            if(lockedTarget) {
+                const b = lockedTarget.bbox;
+                ctx.strokeStyle = '#a78bfa';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(b.x0 - 4, b.y0 - 4, (b.x1 - b.x0) + 8, (b.y1 - b.y0) + 8);
+                
+                // Add lock icon/corner accents
+                ctx.fillStyle = '#a78bfa';
+                ctx.fillRect(b.x0 - 6, b.y0 - 6, 12, 12);
+                ctx.fillRect(b.x1 - 6, b.y0 - 6, 12, 12);
+                ctx.fillRect(b.x0 - 6, b.y1 - 6, 12, 12);
+                ctx.fillRect(b.x1 - 6, b.y1 - 6, 12, 12);
+            }
+        }
+
+        // --- Advanced Color Engine ---
+        let currentColors = { bg: 'rgb(0,0,0)', text: 'rgb(255,255,255)' };
+
+        function extractColors(bbox) {
+            const mCtx = memCanvas.getContext('2d', {willReadFrequently:true});
+            const p = 4; // padding sample
+            
+            // Background sampling from edges
+            const bgPixels = [];
+            const w = bbox.x1 - bbox.x0;
+            const h = bbox.y1 - bbox.y0;
 
             try {
-                // Redraw original to remove highlight boxes
-                ctx.drawImage(originalCanvas, 0, 0);
+                // Top & Bottom strips
+                bgPixels.push(...mCtx.getImageData(bbox.x0, Math.max(0, bbox.y0 - p), w, p).data);
+                bgPixels.push(...mCtx.getImageData(bbox.x0, bbox.y1, w, p).data);
+            } catch(e){}
 
-                const bbox = selectedLine.bbox;
-                const { x0, y0, x1, y1 } = bbox;
-                const width = x1 - x0;
-                const targetHeight = y1 - y0;
-
-                // Color extraction mapping to the first word of the line for maximum accuracy
-                const colorTargetBBox = selectedLine.words && selectedLine.words.length > 0 ? selectedLine.words[0].bbox : bbox;
-                const { backgroundColor, textColor } = analyzeBBoxColors(colorTargetBBox, originalCanvas);
-                
-                document.getElementById('sampleBackground').style.background = backgroundColor;
-                document.getElementById('sampleText').style.background = textColor;
-
-                // Erase entire line bounding box
-                ctx.fillStyle = backgroundColor;
-                const maskPadding = targetHeight * 0.15; 
-                ctx.fillRect(x0 - maskPadding, y0 - maskPadding, width + (maskPadding*2), targetHeight + (maskPadding*2));
-
-                // Exact Sizing Fix: Compute font size based on bounding box height
-                // BBox height usually includes padding, so true font size is slightly smaller
-                let fontSize = targetHeight * 0.85; 
-                ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
-                ctx.fillStyle = textColor;
-                ctx.textBaseline = 'top';
-
-                // Inject text at the exact starting point of the original line
-                ctx.fillText(newTextData, x0, y0 + (targetHeight * 0.05));
-
-                // Save changes to original canvas so edits stack perfectly
-                originalCanvas.getContext('2d', { willReadFrequently: true }).drawImage(canvas, 0, 0);
-
-                logStatus(`OVERRIDE COMPLETE. Line modified successfully.`);
-                
-                // Reset Selection
-                selectedLine = null;
-                document.getElementById('oldText').value = '';
-                document.getElementById('newText').value = '';
-
-            } catch (err) {
-                logStatus('CRITICAL ERROR: ' + err.message);
-            }
-        }
-
-        // --- Core Functions ---
-        function analyzeBBoxColors(bbox, sourceCanvas) {
-            const { x0, y0, x1, y1 } = bbox;
-            const w = Math.max(1, x1 - x0);
-            const h = Math.max(1, y1 - y0);
-            const tempCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
-            
-            const p = Math.max(2, Math.round(h * 0.4)); 
-            const bgAreas = [
-                { x: Math.max(0, x0 - p), y: y0, w: p, h: h },
-                { x: x1, y: y0, w: p, h: h },
-                { x: x0, y: Math.max(0, y0 - p), w: w, h: p },
-                { x: x0, y: y1, w: w, h: p }
-            ];
-
-            const bgAvg = calculateAverageColor(bgAreas, tempCtx);
-            const bgRGB = bgAvg.match(/\d+/g).map(Number);
-            
-            // Extract text color safely within bounds
-            const textData = tempCtx.getImageData(x0, y0, w, h).data;
-            const textRGB = getHighestContrastColor(textData, bgRGB);
-
-            return { backgroundColor: bgAvg, textColor: textRGB };
-        }
-
-        function calculateAverageColor(rects, context) {
             let r=0, g=0, b=0, count=0;
-            rects.forEach(rect => {
-                if (rect.w > 0 && rect.h > 0) {
-                    try {
-                        const data = context.getImageData(rect.x, rect.y, rect.w, rect.h).data;
-                        for (let i = 0; i < data.length; i += 4) {
-                            r += data[i]; g += data[i+1]; b += data[i+2]; count++;
-                        }
-                    } catch(e) {} // ignore out of bounds
-                }
-            });
-            if (count === 0) return 'rgb(255,255,255)';
-            return `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
-        }
-
-        function getHighestContrastColor(pixels, bgColor) {
-            let maxContrast = [0,0,0];
-            let maxDistance = -1;
-            for (let i = 0; i < pixels.length; i += 8) { 
-                const pr = pixels[i], pg = pixels[i+1], pb = pixels[i+2];
-                const distance = Math.sqrt(Math.pow(pr - bgColor[0], 2) + Math.pow(pg - bgColor[1], 2) + Math.pow(pb - bgColor[2], 2));
-                if (distance > maxDistance) {
-                    maxDistance = distance;
-                    maxContrast = [pr, pg, pb];
-                }
+            for(let i=0; i<bgPixels.length; i+=4) {
+                r+=bgPixels[i]; g+=bgPixels[i+1]; b+=bgPixels[i+2]; count++;
             }
-            if (maxDistance < 20) return `rgb(0,0,0)`; 
-            return `rgb(${maxContrast[0]}, ${maxContrast[1]}, ${maxContrast[2]})`;
+            const bgR = count ? Math.round(r/count) : 0;
+            const bgG = count ? Math.round(g/count) : 0;
+            const bgB = count ? Math.round(b/count) : 0;
+
+            currentColors.bg = `rgb(${bgR},${bgG},${bgB})`;
+            
+            // Update UI
+            const hexBG = rgbToHex(bgR, bgG, bgB);
+            ui.bgSwatch.style.background = hexBG;
+            ui.bgHex.innerText = hexBG;
+
+            // Text color sampling (highest contrast)
+            let maxDist = 0;
+            let tr=255, tg=255, tb=255;
+            try {
+                const textData = mCtx.getImageData(bbox.x0, bbox.y0, w, h).data;
+                for(let i=0; i<textData.length; i+=4) {
+                    const pr = textData[i], pg = textData[i+1], pb = textData[i+2];
+                    const dist = Math.abs(pr-bgR) + Math.abs(pg-bgG) + Math.abs(pb-bgB);
+                    if(dist > maxDist) {
+                        maxDist = dist; tr = pr; tg = pg; tb = pb;
+                    }
+                }
+            } catch(e){}
+
+            currentColors.text = `rgb(${tr},${tg},${tb})`;
+            const hexText = rgbToHex(tr, tg, tb);
+            ui.textSwatch.style.background = hexText;
+            ui.textHex.innerText = hexText;
         }
 
-        // --- Download Execution ---
-        function downloadImage() {
-            if (!currentImage) return;
+        // --- Injection Execution ---
+        function executeInjection() {
+            if(!lockedTarget) return;
+
+            const payload = ui.inject.value;
+            const b = lockedTarget.bbox;
+            const targetHeight = b.y1 - b.y0;
+            const targetWidth = b.x1 - b.x0;
+            
+            const mCtx = memCanvas.getContext('2d', {willReadFrequently:true});
+
+            // 1. Wipe Original Matrix Area
+            mCtx.fillStyle = currentColors.bg;
+            // Pad slightly to remove artifacts
+            const padY = targetHeight * 0.15;
+            const padX = targetWidth * 0.05;
+            mCtx.fillRect(b.x0 - padX, b.y0 - padY, targetWidth + (padX*2), targetHeight + (padY*2));
+
+            // 2. Compute Exact Typography Metrics
+            // Fallback to standard sans-serif to avoid font rendering glitches
+            let fontSize = targetHeight * 0.82; 
+            mCtx.font = `600 ${fontSize}px Arial, sans-serif`;
+            mCtx.fillStyle = currentColors.text;
+            mCtx.textBaseline = 'top';
+
+            // Check if string fits width, if not, compress horizontally
+            const textMetrics = mCtx.measureText(payload);
+            let scaleX = 1;
+            if(textMetrics.width > (targetWidth + padX)) {
+                scaleX = (targetWidth + padX) / textMetrics.width;
+            }
+
+            // 3. Inject
+            mCtx.save();
+            mCtx.translate(b.x0, b.y0 + (targetHeight * 0.08)); // Vertical tweak
+            mCtx.scale(scaleX, 1);
+            mCtx.fillText(payload, 0, 0);
+            mCtx.restore();
+
+            // Clear lock and refresh
+            lockedTarget = null;
+            ui.source.value = ''; ui.inject.value = '';
+            ui.btnExec.disabled = true;
+            log('Override Injected Successfully.');
+            renderView();
+        }
+
+        function exportPayload() {
+            if(!memCanvas) return;
             const link = document.createElement('a');
-            link.download = 'DAITYA_Output_Image.png';
-            link.href = canvas.toDataURL('image/png', 1.0);
+            link.download = `DAITYA_OS_PAYLOAD_${Date.now()}.png`;
+            link.href = memCanvas.toDataURL('image/png', 1.0);
             link.click();
-            logStatus('Payload output downloaded successfully.');
+            log('Payload Data Exfiltrated (Downloaded).');
         }
     </script>
 </body>
-</html>
+    </html>
+    

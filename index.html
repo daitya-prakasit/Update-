@@ -23,8 +23,8 @@
         
         .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
         .input-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-        input[type="text"] { padding: 12px; background: #1e293b; color: white; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; font-family: inherit;}
-        input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+        textarea { padding: 12px; background: #1e293b; color: white; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; font-family: inherit; resize: vertical; min-height: 60px;}
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
 
         .btn { background: var(--primary); color: white; border: none; padding: 14px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; margin-bottom: 10px;}
         .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
@@ -50,7 +50,7 @@
     <div class="container">
         <div class="header">
             <h1>DAITYA Execution Terminal</h1>
-            <p>Module: Multi-Select | Exact Sizing | Exact Color Match</p>
+            <p>Module: Full Line Selection | Exact Position | Exact Match</p>
         </div>
 
         <div id="status">> System initialized. Waiting for payload (Image).</div>
@@ -63,12 +63,12 @@
             <div class="control-panel">
                 <h3>Replacement Parameters</h3>
                 <div class="input-group">
-                    <label>Selected Targets (Multi-Select Enabled)</label>
-                    <input type="text" id="oldText" placeholder="Click words to select/deselect..." readonly>
+                    <label>Selected Line Target</label>
+                    <textarea id="oldText" placeholder="Click any text on the image to select the whole line..." readonly></textarea>
                 </div>
                 <div class="input-group">
                     <label>Injection Text</label>
-                    <input type="text" id="newText" placeholder="e.g. BYPASS">
+                    <textarea id="newText" placeholder="Type new text here..."></textarea>
                 </div>
                 
                 <button class="btn" id="btnReplace" onclick="processTextReplacement()" disabled>
@@ -100,8 +100,8 @@
     <script>
         let currentImage = null;
         let originalCanvas = null; 
-        let recognizedWords = [];
-        let selectedWords = [];
+        let recognizedLines = [];
+        let selectedLine = null;
 
         const statusEl = document.getElementById('status');
         const canvas = document.getElementById('outputCanvas');
@@ -129,20 +129,21 @@
                         originalCanvas.height = currentImage.height;
                         originalCanvas.getContext('2d', { willReadFrequently: true }).drawImage(currentImage, 0, 0);
 
-                        selectedWords = [];
+                        selectedLine = null;
                         document.getElementById('oldText').value = '';
+                        document.getElementById('newText').value = '';
 
-                        logStatus('Scanning pixel matrix for text regions... Please wait.');
+                        logStatus('Scanning pixel matrix for text lines... Please wait.');
                         document.getElementById('uploadImage').disabled = true;
 
                         try {
-                            const { data: { words } } = await Tesseract.recognize(
-                                originalCanvas, 'eng', { logger: m => {
+                            const { data: { lines } } = await Tesseract.recognize(
+                                originalCanvas, 'eng+hin', { logger: m => {
                                     if(m.status === 'recognizing text') logStatus(`Scanning... ${Math.round(m.progress * 100)}%`);
                                 }}
                             );
-                            recognizedWords = words;
-                            logStatus('Scan complete. Click words on the image to select multiple.');
+                            recognizedLines = lines;
+                            logStatus('Scan complete. Click on any text to lock the entire line.');
                             document.getElementById('btnReplace').disabled = false;
                             document.getElementById('btnDownload').disabled = false;
                         } catch (err) {
@@ -157,9 +158,9 @@
             }
         });
 
-        // Click to Select Multiple Text
+        // Click to Select Entire Line
         canvas.addEventListener('click', (e) => {
-            if (recognizedWords.length === 0) return;
+            if (recognizedLines.length === 0) return;
 
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -167,92 +168,86 @@
             const x = (e.clientX - rect.left) * scaleX;
             const y = (e.clientY - rect.top) * scaleY;
 
-            // Find clicked word
-            const clickedWord = recognizedWords.find(w => {
-                return x >= w.bbox.x0 && x <= w.bbox.x1 && y >= w.bbox.y0 && y <= w.bbox.y1;
-            });
-
-            if (clickedWord) {
-                // Toggle selection
-                const index = selectedWords.findIndex(w => w === clickedWord);
-                if (index > -1) {
-                    selectedWords.splice(index, 1); // Deselect
-                } else {
-                    selectedWords.push(clickedWord); // Select
-                }
-            }
-
-            // Redraw base image and highlight all selected words
+            // Clear previous highlights
             ctx.drawImage(originalCanvas, 0, 0);
-            
-            selectedWords.forEach(w => {
-                ctx.strokeStyle = '#10b981'; // Green highlights for multi-select
-                ctx.lineWidth = 3;
-                ctx.strokeRect(w.bbox.x0 - 2, w.bbox.y0 - 2, (w.bbox.x1 - w.bbox.x0) + 4, (w.bbox.y1 - w.bbox.y0) + 4);
+
+            // Find which line was clicked
+            selectedLine = recognizedLines.find(line => {
+                return x >= line.bbox.x0 && x <= line.bbox.x1 && y >= line.bbox.y0 && y <= line.bbox.y1;
             });
 
-            const joinedText = selectedWords.map(w => w.text).join(' ');
-            document.getElementById('oldText').value = joinedText;
+            if (selectedLine) {
+                // Highlight the whole line bounding box
+                ctx.strokeStyle = '#8b5cf6';
+                ctx.lineWidth = 3;
+                const pad = 2;
+                ctx.strokeRect(
+                    selectedLine.bbox.x0 - pad, 
+                    selectedLine.bbox.y0 - pad, 
+                    (selectedLine.bbox.x1 - selectedLine.bbox.x0) + (pad*2), 
+                    (selectedLine.bbox.y1 - selectedLine.bbox.y0) + (pad*2)
+                );
 
-            if (selectedWords.length > 0) {
-                logStatus(`Targets locked: [${joinedText}]. Ready for injection.`);
+                const cleanText = selectedLine.text.trim();
+                document.getElementById('oldText').value = cleanText;
+                document.getElementById('newText').value = cleanText; // Pre-fill with old text for easy editing
+                document.getElementById('newText').focus();
+                
+                logStatus(`Line locked. Edit text and click Execute.`);
             } else {
+                document.getElementById('oldText').value = '';
+                document.getElementById('newText').value = '';
                 logStatus('Selection cleared.');
             }
         });
 
         // Replacement Logic
         function processTextReplacement() {
-            if (!currentImage || !originalCanvas || selectedWords.length === 0) {
-                logStatus('ERROR: No target selected.');
+            if (!currentImage || !originalCanvas || !selectedLine) {
+                logStatus('ERROR: No line selected.');
                 return;
             }
 
             const newTextData = document.getElementById('newText').value;
 
             try {
-                // Remove highlight boxes by redrawing original
+                // Redraw original to remove highlight boxes
                 ctx.drawImage(originalCanvas, 0, 0);
 
-                // Calculate Merged Bounding Box for all selected words
-                const minX = Math.min(...selectedWords.map(w => w.bbox.x0));
-                const minY = Math.min(...selectedWords.map(w => w.bbox.y0));
-                const maxX = Math.max(...selectedWords.map(w => w.bbox.x1));
-                const maxY = Math.max(...selectedWords.map(w => w.bbox.y1));
-                
-                const targetHeight = maxY - minY;
+                const bbox = selectedLine.bbox;
+                const { x0, y0, x1, y1 } = bbox;
+                const width = x1 - x0;
+                const targetHeight = y1 - y0;
 
-                // Color Extraction based on the first selected word
-                const { backgroundColor, textColor } = analyzeBBoxColors(selectedWords[0].bbox, originalCanvas);
+                // Color extraction mapping to the first word of the line for maximum accuracy
+                const colorTargetBBox = selectedLine.words && selectedLine.words.length > 0 ? selectedLine.words[0].bbox : bbox;
+                const { backgroundColor, textColor } = analyzeBBoxColors(colorTargetBBox, originalCanvas);
+                
                 document.getElementById('sampleBackground').style.background = backgroundColor;
                 document.getElementById('sampleText').style.background = textColor;
 
-                // Erase Only Selected Words
+                // Erase entire line bounding box
                 ctx.fillStyle = backgroundColor;
-                const maskPadding = Math.max(2, targetHeight * 0.1); 
-                selectedWords.forEach(w => {
-                    const width = w.bbox.x1 - w.bbox.x0;
-                    const height = w.bbox.y1 - w.bbox.y0;
-                    ctx.fillRect(w.bbox.x0 - maskPadding, w.bbox.y0 - maskPadding, width + (maskPadding*2), height + (maskPadding*2));
-                });
+                const maskPadding = targetHeight * 0.15; 
+                ctx.fillRect(x0 - maskPadding, y0 - maskPadding, width + (maskPadding*2), targetHeight + (maskPadding*2));
 
-                // Exact Sizing Fix
-                // Set font size slightly larger than BBox height to visually match the exact pixel height
-                const fontSize = Math.round(targetHeight * 1.15); 
+                // Exact Sizing Fix: Compute font size based on bounding box height
+                // BBox height usually includes padding, so true font size is slightly smaller
+                let fontSize = targetHeight * 0.85; 
                 ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
                 ctx.fillStyle = textColor;
                 ctx.textBaseline = 'top';
 
-                // Inject Text starting at the Top-Left of the merged selection
-                ctx.fillText(newTextData, minX, minY - (targetHeight * 0.1));
+                // Inject text at the exact starting point of the original line
+                ctx.fillText(newTextData, x0, y0 + (targetHeight * 0.05));
 
-                // Save changes to original canvas so subsequent edits stack
+                // Save changes to original canvas so edits stack perfectly
                 originalCanvas.getContext('2d', { willReadFrequently: true }).drawImage(canvas, 0, 0);
 
-                logStatus(`OVERRIDE COMPLETE. Injected [${newTextData}] over multiple targets.`);
+                logStatus(`OVERRIDE COMPLETE. Line modified successfully.`);
                 
                 // Reset Selection
-                selectedWords = [];
+                selectedLine = null;
                 document.getElementById('oldText').value = '';
                 document.getElementById('newText').value = '';
 
@@ -264,8 +259,8 @@
         // --- Core Functions ---
         function analyzeBBoxColors(bbox, sourceCanvas) {
             const { x0, y0, x1, y1 } = bbox;
-            const w = x1 - x0;
-            const h = y1 - y0;
+            const w = Math.max(1, x1 - x0);
+            const h = Math.max(1, y1 - y0);
             const tempCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
             
             const p = Math.max(2, Math.round(h * 0.4)); 
@@ -278,6 +273,8 @@
 
             const bgAvg = calculateAverageColor(bgAreas, tempCtx);
             const bgRGB = bgAvg.match(/\d+/g).map(Number);
+            
+            // Extract text color safely within bounds
             const textData = tempCtx.getImageData(x0, y0, w, h).data;
             const textRGB = getHighestContrastColor(textData, bgRGB);
 
@@ -288,10 +285,12 @@
             let r=0, g=0, b=0, count=0;
             rects.forEach(rect => {
                 if (rect.w > 0 && rect.h > 0) {
-                    const data = context.getImageData(rect.x, rect.y, rect.w, rect.h).data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        r += data[i]; g += data[i+1]; b += data[i+2]; count++;
-                    }
+                    try {
+                        const data = context.getImageData(rect.x, rect.y, rect.w, rect.h).data;
+                        for (let i = 0; i < data.length; i += 4) {
+                            r += data[i]; g += data[i+1]; b += data[i+2]; count++;
+                        }
+                    } catch(e) {} // ignore out of bounds
                 }
             });
             if (count === 0) return 'rgb(255,255,255)';
@@ -324,5 +323,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>

@@ -3,45 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAITYA - Hindi Supported Image Editor</title>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
+    <title>DAITYA - Ultimate Manual Override Editor</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind:wght@600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #eab308; --primary-hover: #ca8a04; --success: #22c55e; --success-hover: #16a34a; --bg: #111827; --surface: #1f2937; --border: #374151; --text: #f9fafb; --text-muted: #9ca3af; }
-        body { font-family: 'Hind', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: var(--surface); border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); padding: 30px; border: 1px solid var(--border); }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: var(--primary); margin: 0 0 10px 0; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
-        .header p { color: var(--text-muted); margin: 0; font-size: 14px; }
+        :root { --primary: #ef4444; --primary-hover: #dc2626; --success: #10b981; --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #fafafa; --text-muted: #a1a1aa; }
+        body { font-family: 'Hind', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; background: var(--surface); border-radius: 12px; padding: 25px; border: 1px solid var(--border); box-shadow: 0 0 30px rgba(239, 68, 68, 0.1); }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;}
+        .header h1 { color: var(--primary); margin: 0 0 5px 0; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
         
-        .upload-section { border: 2px dashed var(--border); padding: 30px; text-align: center; border-radius: 12px; background: #111827; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
-        .upload-section:hover { border-color: var(--primary); }
-        input[type="file"] { font-size: 15px; color: var(--text); }
+        .upload-section { border: 2px dashed var(--border); padding: 20px; text-align: center; border-radius: 8px; background: #09090b; margin-bottom: 20px; cursor: pointer; }
+        input[type="file"] { font-size: 14px; color: var(--text); }
 
-        .editor-panels { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
-        .control-panel { background: #111827; padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-        .control-panel h3 { margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        .editor-panels { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        .control-panel { background: #09090b; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
         
-        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-        .input-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-        input[type="text"] { padding: 12px; background: #1f2937; color: white; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; outline: none; transition: 0.2s; font-family: 'Hind', sans-serif;}
-        input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.2); }
-
-        .btn { background: var(--primary); color: #000; border: none; padding: 14px 20px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Hind', sans-serif; margin-bottom: 10px;}
-        .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
-        .btn:disabled { background: #374151; color: #9ca3af; cursor: not-allowed; transform: none; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+        input[type="text"], input[type="number"] { width: 100%; box-sizing: border-box; padding: 10px; background: #18181b; color: white; border: 1px solid var(--border); border-radius: 6px; font-family: 'Hind', sans-serif; }
+        input[type="color"] { width: 100%; height: 40px; border: 1px solid var(--border); border-radius: 6px; background: #18181b; cursor: pointer; padding: 2px;}
         
-        .btn-success { background: var(--success); color: white;}
-        .btn-success:hover { background: var(--success-hover); }
+        .btn { background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; font-family: 'Hind', sans-serif;}
+        .btn:hover { background: var(--primary-hover); }
+        .btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; }
+        .btn-success { background: var(--success); }
 
-        #status { text-align: center; padding: 15px; border-radius: 8px; background: #000; color: #eab308; font-weight: bold; margin-bottom: 20px; display: none; font-size: 13px; border: 1px solid #eab308;}
+        #status { text-align: center; padding: 10px; border-radius: 6px; background: #000; color: var(--primary); font-weight: bold; margin-bottom: 15px; font-size: 13px; border: 1px solid var(--primary);}
         
-        .result-panel { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; position: relative;}
-        canvas { max-width: 100%; height: auto; display: block; }
-
-        .color-preview-box { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); margin-bottom: 15px;}
-        .color-sample { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); }
-        .color-label { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 6px; font-weight: bold;}
+        .result-panel { position: relative; border: 1px solid var(--border); border-radius: 8px; background: #000; overflow: auto; display: flex; justify-content: center; align-items: flex-start; max-height: 700px; cursor: crosshair;}
+        canvas { display: block; max-width: 100%; }
 
         @media (max-width: 768px) { .editor-panels { grid-template-columns: 1fr; } }
     </style>
@@ -50,11 +40,11 @@
 
     <div class="container">
         <div class="header">
-            <h1>DAITYA Dual-Lang Terminal</h1>
-            <p>Module: Hindi/Eng OCR | Auto-Color | Size Match | Output Downloader</p>
+            <h1>DAITYA Manual Override</h1>
+            <p>Module: Drag-to-Select | Custom Size | Custom Color | Hindi & Eng</p>
         </div>
 
-        <div id="status">> System initialized. Waiting for payload (Image).</div>
+        <div id="status">> Awaiting Image Payload...</div>
 
         <div class="upload-section">
             <input type="file" id="uploadImage" accept="image/*" />
@@ -62,30 +52,29 @@
 
         <div class="editor-panels">
             <div class="control-panel">
-                <h3>Replacement Parameters</h3>
                 <div class="input-group">
-                    <label>Target Text (Hindi / Eng Exact Match)</label>
-                    <input type="text" id="oldText" placeholder="e.g. रुको ya STOP">
+                    <label>1. Target Text Selection</label>
+                    <p style="font-size: 11px; color: #ef4444; margin: 0 0 10px 0;">* Mouse se image par old text ke upar ek box draw karo.</p>
                 </div>
+
                 <div class="input-group">
-                    <label>Injection Text (Hindi / Eng)</label>
-                    <input type="text" id="newText" placeholder="e.g. चलो ya GO">
+                    <label>2. New Text (Hindi / Eng)</label>
+                    <input type="text" id="newText" placeholder="नया टेक्स्ट यहाँ लिखें">
+                </div>
+
+                <div class="input-group">
+                    <label>3. Font Size</label>
+                    <input type="number" id="customSize" value="30">
+                </div>
+
+                <div class="input-group">
+                    <label>4. Text Color</label>
+                    <input type="color" id="customColor" value="#ffffff">
                 </div>
                 
-                <button class="btn" id="btnReplace" onclick="processTextReplacement()" disabled>
-                    [ EXECUTE OVERRIDE ]
+                <button class="btn" id="btnReplace" onclick="executeManualOverride()" disabled>
+                    [ INJECT PAYLOAD ]
                 </button>
-
-                <div class="color-preview-box">
-                    <div>
-                        <div id="sampleBackground" class="color-sample" style="background: #000;"></div>
-                        <div class="color-label">BG MASK</div>
-                    </div>
-                    <div>
-                        <div id="sampleText" class="color-sample" style="background: #fff;"></div>
-                        <div class="color-label">TEXT HEX</div>
-                    </div>
-                </div>
 
                 <button class="btn btn-success" id="btnDownload" onclick="downloadImage()" disabled>
                     [ DOWNLOAD OUTPUT ]
@@ -105,11 +94,16 @@
         const canvas = document.getElementById('outputCanvas');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
+        // Selection Variables
+        let isDrawing = false;
+        let startX, startY, currentX, currentY;
+        let selectionBox = null; // Stores {x, y, w, h}
+
         function logStatus(msg) {
-            statusEl.style.display = 'block';
             statusEl.innerText = '> ' + msg;
         }
 
+        // 1. Upload Image
         document.getElementById('uploadImage').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -126,9 +120,10 @@
                         originalCanvas.height = currentImage.height;
                         originalCanvas.getContext('2d').drawImage(currentImage, 0, 0);
 
-                        logStatus('Image parsed into memory. Enter parameters.');
+                        logStatus('System Ready. Draw a box over the text you want to remove.');
                         document.getElementById('btnReplace').disabled = false;
                         document.getElementById('btnDownload').disabled = false;
+                        selectionBox = null;
                     };
                     currentImage.src = event.target.result;
                 };
@@ -136,130 +131,136 @@
             }
         });
 
-        async function processTextReplacement() {
-            if (!currentImage || !originalCanvas) return;
-            const oldTextTarget = document.getElementById('oldText').value.trim();
-            const newTextData = document.getElementById('newText').value;
+        // 2. Mouse Events for Drag-to-Select
+        canvas.addEventListener('mousedown', (e) => {
+            if (!currentImage) return;
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            // Calculate scale in case canvas is resized by CSS
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            startX = (e.clientX - rect.left) * scaleX;
+            startY = (e.clientY - rect.top) * scaleY;
+        });
 
-            if (!oldTextTarget) {
-                logStatus('ERROR: Missing target text.');
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            currentX = (e.clientX - rect.left) * scaleX;
+            currentY = (e.clientY - rect.top) * scaleY;
+
+            // Redraw image and draw selection rectangle
+            ctx.drawImage(originalCanvas, 0, 0);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(startX, startY, currentX - startX, currentY - startY);
+            
+            // Highlight background slightly
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+            ctx.fillRect(startX, startY, currentX - startX, currentY - startY);
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
+            ctx.setLineDash([]); // Reset line dash
+
+            const w = currentX - startX;
+            const h = currentY - startY;
+
+            // Handle reverse drawing (bottom-right to top-left)
+            const finalX = w < 0 ? currentX : startX;
+            const finalY = h < 0 ? currentY : startY;
+            const finalW = Math.abs(w);
+            const finalH = Math.abs(h);
+
+            if (finalW > 5 && finalH > 5) {
+                selectionBox = { x: finalX, y: finalY, w: finalW, h: finalH };
+                logStatus(`Target Locked: Box [${Math.round(finalW)}x${Math.round(finalH)}]. Set Text, Size, Color and Inject.`);
+            } else {
+                ctx.drawImage(originalCanvas, 0, 0); // Clear tiny accidental clicks
+                selectionBox = null;
+            }
+        });
+
+        // 3. Execution Bypass
+        function executeManualOverride() {
+            if (!currentImage || !originalCanvas) return;
+            if (!selectionBox) {
+                logStatus('ERROR: No target selected. Draw a box on the image first.');
                 return;
             }
 
+            const newTextData = document.getElementById('newText').value;
+            const customSize = document.getElementById('customSize').value;
+            const customColor = document.getElementById('customColor').value;
+
             try {
+                // Restore original before applying final mask (removes red dashed line)
                 ctx.drawImage(originalCanvas, 0, 0);
-                logStatus('Deploying Hindi+Eng OCR Engine... (Please wait if first run)');
-                document.getElementById('btnReplace').disabled = true;
 
-                // DAITYA BYPASS: Added 'hin' (Hindi) to OCR language parameters.
-                const { data: { words } } = await Tesseract.recognize(
-                    originalCanvas, 'eng+hin', { logger: m => console.log(m.status + " " + Math.round(m.progress * 100) + "%") }
-                );
+                const { x, y, w, h } = selectionBox;
 
-                const targetWord = words.find(w => w.text.trim() === oldTextTarget);
+                // Auto-calculate background mask color from the edges of the box
+                const bgColor = getEdgeAverageColor(x, y, w, h, originalCanvas);
 
-                if (!targetWord) {
-                    logStatus(`ERROR: Target [${oldTextTarget}] not located. Make sure the word is clear in image.`);
-                    document.getElementById('btnReplace').disabled = false;
-                    return;
-                }
+                // Erase Old Text (In-Paint Mask)
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(x - 2, y - 2, w + 4, h + 4); // Slight padding to ensure old text hides
 
-                logStatus(`Target locked. Executing color & dimensional analysis...`);
-                const bbox = targetWord.bbox;
-                const { x0, y0, x1, y1 } = bbox;
-                const width = x1 - x0;
-                const targetHeight = y1 - y0;
-
-                const { backgroundColor, textColor } = analyzeBBoxColors(bbox, originalCanvas);
-                document.getElementById('sampleBackground').style.background = backgroundColor;
-                document.getElementById('sampleText').style.background = textColor;
-
-                // Erase Old Text
-                ctx.fillStyle = backgroundColor;
-                const maskPadding = targetHeight * 0.1; 
-                ctx.fillRect(x0 - maskPadding, y0 - maskPadding, width + (maskPadding*2), targetHeight + (maskPadding*2));
-
-                // DAITYA BYPASS: Hindi font applied for exact rendering
-                let fontSize = targetHeight; 
-                ctx.font = `600 ${fontSize}px 'Hind', sans-serif`;
-                
-                let metrics = ctx.measureText(newTextData);
-                let actualRenderedHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-                
-                if (actualRenderedHeight > 0) {
-                    let scaleFactor = targetHeight / actualRenderedHeight;
-                    fontSize = fontSize * scaleFactor * 0.85; 
-                }
-
-                ctx.font = `600 ${fontSize}px 'Hind', sans-serif`;
-                ctx.fillStyle = textColor;
+                // Inject New Text
+                ctx.font = `600 ${customSize}px 'Hind', sans-serif`;
+                ctx.fillStyle = customColor;
                 ctx.textBaseline = 'top';
-                ctx.fillText(newTextData, x0, y0 + (targetHeight * 0.05));
+                
+                // Align text inside the box (Left-aligned, vertically centered)
+                ctx.fillText(newTextData, x + 2, y + (h/2) - (customSize/2));
 
-                logStatus(`OVERRIDE COMPLETE. Injected [${newTextData}] successfully.`);
-                document.getElementById('btnReplace').disabled = false;
+                // Save this new state as the original so we can keep editing
+                originalCanvas.getContext('2d').drawImage(canvas, 0, 0);
+                selectionBox = null; // Reset selection
+
+                logStatus(`PAYLOAD INJECTED. You can draw another box to edit more text.`);
 
             } catch (err) {
                 logStatus('CRITICAL ERROR: ' + err.message);
-                document.getElementById('btnReplace').disabled = false;
             }
         }
 
-        function analyzeBBoxColors(bbox, sourceCanvas) {
-            const { x0, y0, x1, y1 } = bbox;
-            const w = x1 - x0;
-            const h = y1 - y0;
+        // Helper: Get background color from just outside the selection box
+        function getEdgeAverageColor(x, y, w, h, sourceCanvas) {
             const tempCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
+            let r=0, g=0, b=0, count=0;
             
-            const p = Math.max(2, Math.round(h * 0.4)); 
-            const bgAreas = [
-                { x: Math.max(0, x0 - p), y: y0, w: p, h: h },
-                { x: x1, y: y0, w: p, h: h },
-                { x: x0, y: Math.max(0, y0 - p), w: w, h: p },
-                { x: x0, y: y1, w: w, h: p }
+            // Sample a 5px border around the box to get the background color
+            const p = 5; 
+            const edges = [
+                { ex: Math.max(0, x - p), ey: Math.max(0, y - p), ew: w + p*2, eh: p }, // Top
+                { ex: Math.max(0, x - p), ey: y + h, ew: w + p*2, eh: p } // Bottom
             ];
 
-            const bgAvg = calculateAverageColor(bgAreas, tempCtx);
-            const bgRGB = bgAvg.match(/\d+/g).map(Number);
-            const textData = tempCtx.getImageData(x0, y0, w, h).data;
-            const textRGB = getHighestContrastColor(textData, bgRGB);
-
-            return { backgroundColor: bgAvg, textColor: textRGB };
-        }
-
-        function calculateAverageColor(rects, context) {
-            let r=0, g=0, b=0, count=0;
-            rects.forEach(rect => {
-                if (rect.w > 0 && rect.h > 0) {
-                    const data = context.getImageData(rect.x, rect.y, rect.w, rect.h).data;
+            edges.forEach(rect => {
+                if (rect.ew > 0 && rect.eh > 0) {
+                    const data = tempCtx.getImageData(rect.ex, rect.ey, rect.ew, rect.eh).data;
                     for (let i = 0; i < data.length; i += 4) {
                         r += data[i]; g += data[i+1]; b += data[i+2]; count++;
                     }
                 }
             });
-            if (count === 0) return 'rgb(255,255,255)';
+            if (count === 0) return '#ffffff';
             return `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
         }
 
-        function getHighestContrastColor(pixels, bgColor) {
-            let maxContrast = [0,0,0];
-            let maxDistance = -1;
-            for (let i = 0; i < pixels.length; i += 8) { 
-                const pr = pixels[i], pg = pixels[i+1], pb = pixels[i+2];
-                const distance = Math.sqrt(Math.pow(pr - bgColor[0], 2) + Math.pow(pg - bgColor[1], 2) + Math.pow(pb - bgColor[2], 2));
-                if (distance > maxDistance) {
-                    maxDistance = distance;
-                    maxContrast = [pr, pg, pb];
-                }
-            }
-            if (maxDistance < 20) return `rgb(0,0,0)`; 
-            return `rgb(${maxContrast[0]}, ${maxContrast[1]}, ${maxContrast[2]})`;
-        }
-
+        // 4. Download
         function downloadImage() {
             if (!currentImage) return;
             const link = document.createElement('a');
-            link.download = 'DAITYA_Output_Image.png';
+            link.download = 'DAITYA_Manual_Override.png';
             link.href = canvas.toDataURL('image/png', 1.0); 
             link.click();
             logStatus('Payload output downloaded successfully.');

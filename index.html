@@ -3,54 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAITYA - Smart Selection Editor</title>
+    <title>DAITYA - Ultra Pro Sniper</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #3b82f6; --primary-hover: #2563eb; --bg: #0f172a; --panel: #1e293b; --border: #334155; --text: #f8fafc; }
-        body { font-family: 'Hind', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        :root { --primary: #10b981; --primary-hover: #059669; --bg: #09090b; --panel: #18181b; --border: #27272a; --text: #f4f4f5; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { color: var(--primary); margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
-        .header p { color: #94a3b8; margin: 0; font-size: 14px; }
+        .header h1 { color: var(--primary); margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+        .header p { color: #a1a1aa; margin: 0; font-size: 14px; }
         
-        .toolbar { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 8px; display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; box-shadow: 0 10px 20px rgba(0,0,0,0.5); width: 100%; max-width: 1000px; justify-content: center;}
+        .toolbar { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 8px; display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.8); width: 100%; max-width: 1050px; justify-content: center;}
         
         input[type="file"] { color: var(--text); font-size: 14px; cursor: pointer; width: 190px;}
-        select { background: #334155; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; outline: none; font-family: inherit;}
+        select, input[type="text"] { background: #27272a; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; outline: none; font-family: inherit;}
         input[type="color"] { background: none; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; height: 35px; width: 45px; padding: 2px; }
-        input[type="number"] { background: #334155; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 60px; outline: none;}
+        input[type="number"] { background: #27272a; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 60px; outline: none;}
 
-        button { background: var(--primary); color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit;}
-        button:hover { background: var(--primary-hover); transform: translateY(-1px);}
-        button:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; transform: none;}
+        button { background: #3f3f46; color: #fff; border: 1px solid #52525b; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit;}
+        button:hover { background: #52525b; transform: translateY(-1px);}
+        button:disabled { background: #18181b; color: #52525b; border-color: #27272a; cursor: not-allowed; transform: none;}
         
-        .btn-snip { background: #ef4444; }
-        .btn-snip:hover { background: #dc2626; }
-        .btn-snip.active { background: #22c55e; animation: pulse 1.5s infinite; }
-        .btn-green { background: #10b981; }
-        .btn-green:hover { background: #059669; }
+        .btn-snip { background: #ef4444; border-color: #ef4444; color: white;}
+        .btn-snip:hover { background: #dc2626; border-color: #dc2626;}
+        .btn-snip.active { background: #22c55e; border-color: #22c55e; animation: pulse 1.5s infinite; }
+        .btn-green { background: var(--primary); border-color: var(--primary); }
+        .btn-green:hover { background: var(--primary-hover); }
 
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
 
-        #status { background: #1e293b; border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-bottom: 15px; width: 100%; max-width: 1000px; text-align: center; }
-        .status-scanning { background: #b45309 !important; border-color: #f59e0b !important; color: #fef3c7 !important; }
+        #status { background: var(--panel); border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-bottom: 15px; width: 100%; max-width: 1050px; text-align: center; }
+        .status-scanning { background: #78350f !important; border-color: #d97706 !important; color: #fde68a !important; }
         
         .canvas-container-wrapper { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: #000; }
         
         .icon-btn { padding: 8px 12px; font-size: 16px; }
         .tool-group { display: flex; align-items: center; gap: 8px; padding: 0 10px; border-right: 1px solid var(--border); }
         .tool-group:last-child { border-right: none; }
+        .active-bold { background: var(--text) !important; color: var(--bg) !important; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>DAITYA Smart Extractor</h1>
-        <p>Draw a box over text. AI will extract it, mask the background, and make it editable instantly.</p>
+        <h1>DAITYA ULTRA PRO</h1>
+        <p>Smart Auto-Detect • Perfect Masking • Instant Live Edit</p>
     </div>
 
-    <div id="status">> Awaiting Image Upload.</div>
+    <div id="status">> SYSTEM READY. WAITING FOR IMAGE TARGET.</div>
 
     <div class="toolbar">
         <div class="tool-group">
@@ -62,26 +63,22 @@
         </div>
         
         <div class="tool-group">
-            <select id="fontFamily" title="Default Font">
-                <option value="Hind">Hind</option>
+            <select id="fontFamily" title="Base Font Match">
+                <option value="Roboto">Roboto</option>
                 <option value="Arial">Arial</option>
                 <option value="Times New Roman">Times</option>
-                <option value="Courier New">Courier</option>
                 <option value="Verdana">Verdana</option>
             </select>
-            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" id="defaultBold" checked> Bold
-            </label>
         </div>
 
         <div class="tool-group">
-            <input type="color" id="textColor" value="#ffffff" disabled title="Change Text Color">
-            <input type="number" id="textSize" value="20" disabled title="Change Font Size">
-            <button class="icon-btn" id="btnBold" onclick="toggleSelectedBold()" disabled title="Toggle Bold on Selected"><b>B</b></button>
-            <button class="icon-btn" id="btnDelete" onclick="deleteSelected()" disabled title="Delete Selected">🗑️</button>
+            <input type="color" id="textColor" value="#ffffff" disabled title="Text Color">
+            <input type="number" id="textSize" value="20" disabled title="Font Size">
+            <button class="icon-btn" id="btnBold" onclick="toggleSelectedBold()" disabled title="Toggle Bold"><b>B</b></button>
+            <button class="icon-btn" id="btnDelete" onclick="deleteSelected()" disabled title="Delete Node">🗑️</button>
         </div>
 
-        <button class="btn-green" id="btnDownload" onclick="downloadImage()" disabled style="margin-left: auto;">⬇ Download HD</button>
+        <button class="btn-green" id="btnDownload" onclick="downloadImage()" disabled style="margin-left: auto;">⬇ DOWNLOAD OUTPUT</button>
     </div>
 
     <div class="canvas-container-wrapper">
@@ -94,7 +91,6 @@
         let originalImageElement = null; 
         let tempCanvasContext = null;
 
-        // Manual Drawing Variables
         let isDrawingMode = false;
         let isMouseDown = false;
         let selectionRect = null;
@@ -106,7 +102,7 @@
             else statusEl.classList.remove('status-scanning');
         }
 
-        // Load Image
+        // LOAD IMAGE
         document.getElementById('uploadImage').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -130,32 +126,32 @@
                         
                         document.getElementById('btnDraw').disabled = false;
                         document.getElementById('btnDownload').disabled = false;
-                        logStatus('Image loaded. Click [✂️ Draw Box] and select text to extract and edit.');
+                        logStatus('TARGET ACQUIRED. Click [✂️ Draw Box] to isolate text node.');
                     });
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // --- Manual Snipping & OCR Logic ---
+        // DRAW BOX LOGIC
         function toggleDrawMode() {
             isDrawingMode = !isDrawingMode;
             const btn = document.getElementById('btnDraw');
             
             if (isDrawingMode) {
                 btn.classList.add('active');
-                btn.innerText = 'Drawing Active...';
+                btn.innerText = 'DRAWING ACTIVE...';
                 canvas.defaultCursor = 'crosshair';
                 canvas.selection = false; 
                 canvas.discardActiveObject();
                 canvas.renderAll();
-                logStatus('MODE ACTIVE: Draw a box exactly over the text you want to edit.');
+                logStatus('MODE: DRAW. Isolate exact text bounds.');
             } else {
                 btn.classList.remove('active');
                 btn.innerText = '✂️ Draw Box';
                 canvas.defaultCursor = 'default';
                 canvas.selection = true;
-                logStatus('Selection mode active. You can move or double-click text to edit.');
+                logStatus('MODE: EDIT.');
             }
         }
 
@@ -168,8 +164,8 @@
 
             selectionRect = new fabric.Rect({
                 left: startX, top: startY, width: 0, height: 0,
-                fill: 'rgba(239, 68, 68, 0.2)',
-                stroke: '#ef4444', strokeWidth: 1, strokeDashArray: [3, 3],
+                fill: 'rgba(16, 185, 129, 0.2)',
+                stroke: '#10b981', strokeWidth: 1, strokeDashArray: [3, 3],
                 selectable: false, evented: false
             });
             canvas.add(selectionRect);
@@ -196,110 +192,126 @@
             } else {
                 canvas.remove(selectionRect); 
             }
-            
-            toggleDrawMode(); // Turn off draw mode after one selection
+            toggleDrawMode(); 
         });
 
-        // --- Core Processing: OCR & Replace ---
+        // CORE ENGINE: EXTRACT, ANALYZE, INJECT
         async function processDrawnBox(rectObj) {
             let x = Math.round(rectObj.left);
             let y = Math.round(rectObj.top);
             let w = Math.round(rectObj.width);
             let h = Math.round(rectObj.height);
 
-            // Remove the temporary red selection box
             canvas.remove(rectObj);
 
-            // 1. Extract Colors
-            let { bgColorHex, textColorHex } = extractStrictColors(x, y, w, h);
-
-            // 2. Crop Image for OCR
+            // 1. ADVANCED ANALYSIS (Color, Thickness/Bold Detection)
+            let analysis = extractData(x, y, w, h);
+            
+            // 2. CROP FOR OCR
             let cropCanvas = document.createElement('canvas');
-            cropCanvas.width = w;
-            cropCanvas.height = h;
+            cropCanvas.width = w; cropCanvas.height = h;
             let cropCtx = cropCanvas.getContext('2d');
             cropCtx.drawImage(originalImageElement, x, y, w, h, 0, 0, w, h);
             let croppedBase64 = cropCanvas.toDataURL('image/png');
 
-            logStatus('Scanning selected area... Please wait.', true);
+            logStatus('ANALYZING NODE... EXECUTING AI OCR.', true);
 
             try {
-                // 3. Run OCR on cropped area
+                // 3. OCR EXECUTION
                 const result = await Tesseract.recognize(croppedBase64, 'eng');
                 let extractedText = result.data.text.trim();
-                
-                // Fallback if OCR fails to read anything
                 if (!extractedText) extractedText = "Edit Me";
 
-                // 4. Create Background Mask
+                // 4. MASK INJECTION
                 let maskRect = new fabric.Rect({
-                    left: x, top: y, width: w, height: h,
-                    fill: bgColorHex, selectable: false, evented: false
+                    left: x, top: y, width: w + 2, height: h + 2, // Slight padding to kill anti-aliasing
+                    fill: analysis.bgColor, selectable: false, evented: false
                 });
                 canvas.add(maskRect);
                 maskRect.sendToBack();
 
-                // 5. Insert Editable Text
+                // 5. TEXT INJECTION (Exact Match Parameters)
                 let selectedFont = document.getElementById('fontFamily').value;
-                let isBold = document.getElementById('defaultBold').checked ? 'bold' : 'normal';
-
-                // Adjusted font size to fit box nicely
-                let fontSize = Math.round(h * 0.75); 
+                let isBold = analysis.isBold ? 'bold' : 'normal';
+                
+                // Fine-tune font size based on box height to match original scale perfectly
+                let exactFontSize = Math.round(h * 0.82);
 
                 let editableText = new fabric.IText(extractedText, {
-                    left: x + 2, top: y + 2, 
-                    fontSize: fontSize, 
+                    left: x + 1, top: y, 
+                    fontSize: exactFontSize, 
                     fontFamily: selectedFont, 
-                    fill: textColorHex, 
+                    fill: analysis.textColor, 
                     fontWeight: isBold,
-                    editable: true
+                    editable: true,
+                    lineHeight: 1
                 });
 
                 canvas.add(editableText);
                 canvas.setActiveObject(editableText);
                 editableText.bringToFront();
 
-                logStatus(`Text extracted: "${extractedText}". Double-click text to edit.`);
+                // 6. INSTANT EDIT MODE EXECUTION
+                editableText.enterEditing();
+                editableText.selectAll();
+                canvas.renderAll();
+
+                updateToolbarUI(editableText);
+                logStatus(`NODE EXTRACTED [${isBold.toUpperCase()}]. TYPE TO REPLACE.`);
 
             } catch (error) {
                 console.error(error);
-                logStatus("ERROR: Failed to extract text.");
+                logStatus("ERROR: DATA EXTRACTION FAILED.");
             }
         }
 
-        // Color Extraction Engine
-        function extractStrictColors(x, y, w, h) {
-            let p = 2; 
-            const bgAreas = [
-                { rx: x, ry: y, rw: p, rh: h }, { rx: x + w - p, ry: y, rw: p, rh: h },
-                { rx: x, ry: y, rw: w, rh: p }, { rx: x, ry: y + h - p, rw: w, rh: p }
-            ];
-
-            let r=0, g=0, b=0, count=0;
-            bgAreas.forEach(area => {
-                if (area.rw > 0 && area.rh > 0 && area.rx < tempCanvasContext.canvas.width && area.ry < tempCanvasContext.canvas.height) {
-                    let data = tempCanvasContext.getImageData(area.rx, area.ry, area.rw, area.rh).data;
-                    for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; count++; }
+        // ULTRA PRO DATA EXTRACTION ENGINE (Color & Weight Heuristics)
+        function extractData(x, y, w, h) {
+            let imgData = tempCanvasContext.getImageData(x, y, w, h).data;
+            
+            // Background heuristic: Sample edges
+            let r=0, g=0, b=0, edgeCount=0;
+            const p = 2; // Border sampling depth
+            for (let i = 0; i < w; i++) {
+                for (let j = 0; j < h; j++) {
+                    if (i < p || i > w - p || j < p || j > h - p) {
+                        let idx = (j * w + i) * 4;
+                        r += imgData[idx]; g += imgData[idx+1]; b += imgData[idx+2];
+                        edgeCount++;
+                    }
                 }
-            });
-            let bgR = count > 0 ? Math.round(r/count) : 255; 
-            let bgG = count > 0 ? Math.round(g/count) : 255; 
-            let bgB = count > 0 ? Math.round(b/count) : 255;
+            }
+            let bgR = Math.round(r/edgeCount); let bgG = Math.round(g/edgeCount); let bgB = Math.round(b/edgeCount);
+            
+            // Foreground (Text) & Weight heuristic
+            let maxDist = -1; let txtColor = [0,0,0];
+            let textPixelCount = 0; let totalPixels = w * h;
 
-            let textData = tempCanvasContext.getImageData(x, y, w, h).data;
-            let maxContrast = [0,0,0]; let maxDist = -1;
-            for (let i = 0; i < textData.length; i += 8) { 
-                let dist = Math.sqrt(Math.pow(textData[i]-bgR, 2) + Math.pow(textData[i+1]-bgG, 2) + Math.pow(textData[i+2]-bgB, 2));
-                if (dist > maxDist) { maxDist = dist; maxContrast = [textData[i], textData[i+1], textData[i+2]]; }
+            for (let i = 0; i < imgData.length; i += 4) {
+                let dist = Math.sqrt(Math.pow(imgData[i]-bgR, 2) + Math.pow(imgData[i+1]-bgG, 2) + Math.pow(imgData[i+2]-bgB, 2));
+                
+                // If color is distinctly different from background, it's part of the text
+                if (dist > 40) {
+                    textPixelCount++;
+                }
+
+                // Find highest contrast pixel for text color
+                if (dist > maxDist) { 
+                    maxDist = dist; txtColor = [imgData[i], imgData[i+1], imgData[i+2]]; 
+                }
             }
             
-            let txtHex = maxDist < 20 ? '#000000' : "#" + (1 << 24 | maxContrast[0] << 16 | maxContrast[1] << 8 | maxContrast[2]).toString(16).slice(1);
+            // Bold Detection Logic: If text takes up > 16% of the bounding box, it's highly likely bold.
+            let pixelRatio = textPixelCount / totalPixels;
+            let isBoldDetected = pixelRatio > 0.16;
+
             let bgHex = "#" + (1 << 24 | bgR << 16 | bgG << 8 | bgB).toString(16).slice(1);
+            let txtHex = maxDist < 20 ? '#000000' : "#" + (1 << 24 | txtColor[0] << 16 | txtColor[1] << 8 | txtColor[2]).toString(16).slice(1);
             
-            return { bgColorHex: bgHex, textColorHex: txtHex };
+            return { bgColor: bgHex, textColor: txtHex, isBold: isBoldDetected };
         }
 
-        // --- Live Edit UI ---
+        // UI SYNC
         canvas.on('selection:created', handleSelection);
         canvas.on('selection:updated', handleSelection);
         canvas.on('selection:cleared', () => {
@@ -307,33 +319,45 @@
             document.getElementById('textSize').disabled = true;
             document.getElementById('btnBold').disabled = true; 
             document.getElementById('btnDelete').disabled = true;
+            document.getElementById('btnBold').classList.remove('active-bold');
         });
 
         function handleSelection(e) {
-            const obj = e.selected[0];
-            if (obj && obj.type === 'i-text') {
-                document.getElementById('textColor').disabled = false;
-                document.getElementById('textSize').disabled = false;
-                document.getElementById('btnBold').disabled = false; 
-                document.getElementById('btnDelete').disabled = false;
-                
-                document.getElementById('textColor').value = obj.fill || '#ffffff';
-                document.getElementById('textSize').value = obj.fontSize || 20;
-                document.getElementById('fontFamily').value = obj.fontFamily || 'Hind';
+            if (e.selected && e.selected[0].type === 'i-text') {
+                updateToolbarUI(e.selected[0]);
             }
         }
 
+        function updateToolbarUI(obj) {
+            document.getElementById('textColor').disabled = false;
+            document.getElementById('textSize').disabled = false;
+            document.getElementById('btnBold').disabled = false; 
+            document.getElementById('btnDelete').disabled = false;
+            
+            document.getElementById('textColor').value = obj.fill || '#ffffff';
+            document.getElementById('textSize').value = Math.round(obj.fontSize) || 20;
+            document.getElementById('fontFamily').value = obj.fontFamily || 'Roboto';
+
+            let btnBold = document.getElementById('btnBold');
+            if (obj.fontWeight === 'bold' || obj.fontWeight >= 600) {
+                btnBold.classList.add('active-bold');
+            } else {
+                btnBold.classList.remove('active-bold');
+            }
+        }
+
+        // TOOLBAR ACTIONS
         function toggleSelectedBold() {
             let activeObj = canvas.getActiveObject();
             if (activeObj && activeObj.type === 'i-text') {
                 let currentWeight = activeObj.fontWeight;
                 let newWeight = (currentWeight === 'bold' || currentWeight === 600 || currentWeight === 700) ? 'normal' : 'bold';
                 activeObj.set('fontWeight', newWeight);
+                updateToolbarUI(activeObj);
                 canvas.renderAll();
             }
         }
 
-        // Real-time property binding
         document.getElementById('textColor').addEventListener('input', function(e) {
             if (canvas.getActiveObject()) { canvas.getActiveObject().set('fill', e.target.value); canvas.renderAll(); }
         });
@@ -357,7 +381,7 @@
         function downloadImage() {
             canvas.discardActiveObject(); canvas.renderAll();
             let link = document.createElement('a');
-            link.download = 'DAITYA_SmartExtracted.png';
+            link.download = 'DAITYA_Output.png';
             link.href = canvas.toDataURL({ format: 'png', quality: 1 }); 
             link.click();
         }

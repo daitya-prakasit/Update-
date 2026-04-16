@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAITYA - Auto Text Replacer (AI OCR)</title>
+    <title>DAITYA - Smart Selection Editor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;600&display=swap" rel="stylesheet">
@@ -14,10 +14,10 @@
         .header h1 { color: var(--primary); margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
         .header p { color: #94a3b8; margin: 0; font-size: 14px; }
         
-        .toolbar { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 8px; display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; box-shadow: 0 10px 20px rgba(0,0,0,0.5); width: 100%; max-width: 1100px; justify-content: center;}
+        .toolbar { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 8px; display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; box-shadow: 0 10px 20px rgba(0,0,0,0.5); width: 100%; max-width: 1000px; justify-content: center;}
         
         input[type="file"] { color: var(--text); font-size: 14px; cursor: pointer; width: 190px;}
-        input[type="text"], select { background: #334155; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; outline: none; font-family: inherit;}
+        select { background: #334155; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; outline: none; font-family: inherit;}
         input[type="color"] { background: none; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; height: 35px; width: 45px; padding: 2px; }
         input[type="number"] { background: #334155; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 60px; outline: none;}
 
@@ -27,10 +27,13 @@
         
         .btn-snip { background: #ef4444; }
         .btn-snip:hover { background: #dc2626; }
+        .btn-snip.active { background: #22c55e; animation: pulse 1.5s infinite; }
         .btn-green { background: #10b981; }
         .btn-green:hover { background: #059669; }
 
-        #status { background: #1e293b; border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-bottom: 15px; width: 100%; max-width: 1100px; text-align: center; transition: 0.3s; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+
+        #status { background: #1e293b; border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-bottom: 15px; width: 100%; max-width: 1000px; text-align: center; }
         .status-scanning { background: #b45309 !important; border-color: #f59e0b !important; color: #fef3c7 !important; }
         
         .canvas-container-wrapper { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: #000; }
@@ -43,8 +46,8 @@
 <body>
 
     <div class="header">
-        <h1>DAITYA Auto-Replacer</h1>
-        <p>AI OCR Engine loaded. Type target text and replacement text. Zero manual selection.</p>
+        <h1>DAITYA Smart Extractor</h1>
+        <p>Draw a box over text. AI will extract it, mask the background, and make it editable instantly.</p>
     </div>
 
     <div id="status">> Awaiting Image Upload.</div>
@@ -53,29 +56,27 @@
         <div class="tool-group">
             <input type="file" id="uploadImage" accept="image/*" />
         </div>
+
+        <div class="tool-group">
+            <button class="btn-snip" id="btnDraw" onclick="toggleDrawMode()" disabled>✂️ Draw Box</button>
+        </div>
         
         <div class="tool-group">
-            <input type="text" id="findText" placeholder="Find Text (Old)..." title="Exact text to search in the image">
-            <input type="text" id="replaceText" placeholder="Replace With (New)..." title="Text to insert">
-            <select id="fontFamily" title="Select Font">
+            <select id="fontFamily" title="Default Font">
                 <option value="Hind">Hind</option>
                 <option value="Arial">Arial</option>
                 <option value="Times New Roman">Times</option>
                 <option value="Courier New">Courier</option>
                 <option value="Verdana">Verdana</option>
             </select>
-            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px;">
                 <input type="checkbox" id="defaultBold" checked> Bold
             </label>
         </div>
 
         <div class="tool-group">
-            <button class="btn-snip" id="btnAutoReplace" onclick="autoReplaceText()" disabled>⚡ Auto Replace</button>
-        </div>
-
-        <div class="tool-group">
-            <input type="color" id="textColor" value="#ffffff" disabled title="Change Selected Text Color">
-            <input type="number" id="textSize" value="20" disabled title="Change Selected Font Size">
+            <input type="color" id="textColor" value="#ffffff" disabled title="Change Text Color">
+            <input type="number" id="textSize" value="20" disabled title="Change Font Size">
             <button class="icon-btn" id="btnBold" onclick="toggleSelectedBold()" disabled title="Toggle Bold on Selected"><b>B</b></button>
             <button class="icon-btn" id="btnDelete" onclick="deleteSelected()" disabled title="Delete Selected">🗑️</button>
         </div>
@@ -92,7 +93,12 @@
         let canvas = new fabric.Canvas('editorCanvas', { selection: true });
         let originalImageElement = null; 
         let tempCanvasContext = null;
-        let base64Image = null;
+
+        // Manual Drawing Variables
+        let isDrawingMode = false;
+        let isMouseDown = false;
+        let selectionRect = null;
+        let startX, startY;
 
         function logStatus(msg, isScanning = false) { 
             statusEl.innerText = '> ' + msg; 
@@ -106,15 +112,14 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(f) {
-                    base64Image = f.target.result;
-                    fabric.Image.fromURL(base64Image, function(img) {
+                    fabric.Image.fromURL(f.target.result, function(img) {
                         canvas.clear();
                         canvas.setWidth(img.width);
                         canvas.setHeight(img.height);
                         canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
                         
                         originalImageElement = new Image();
-                        originalImageElement.src = base64Image;
+                        originalImageElement.src = f.target.result;
                         originalImageElement.onload = () => {
                             let tempCanvas = document.createElement('canvas');
                             tempCanvas.width = img.width;
@@ -123,101 +128,146 @@
                             tempCanvasContext.drawImage(originalImageElement, 0, 0);
                         };
                         
-                        document.getElementById('btnAutoReplace').disabled = false;
+                        document.getElementById('btnDraw').disabled = false;
                         document.getElementById('btnDownload').disabled = false;
-                        logStatus('Image loaded. Enter text to find and replace, then click [⚡ Auto Replace].');
+                        logStatus('Image loaded. Click [✂️ Draw Box] and select text to extract and edit.');
                     });
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // --- OCR Auto-Replace Logic ---
-        async function autoReplaceText() {
-            let targetText = document.getElementById('findText').value.trim();
-            let newText = document.getElementById('replaceText').value.trim() || ' ';
+        // --- Manual Snipping & OCR Logic ---
+        function toggleDrawMode() {
+            isDrawingMode = !isDrawingMode;
+            const btn = document.getElementById('btnDraw');
             
-            if (!targetText) {
-                alert("Please enter the text you want to find!");
-                return;
-            }
-
-            document.getElementById('btnAutoReplace').disabled = true;
-            logStatus(`Scanning image for "${targetText}"... Please wait.`, true);
-
-            try {
-                // Initialize Tesseract worker
-                const worker = await Tesseract.createWorker('eng');
-                const ret = await worker.recognize(base64Image);
-                await worker.terminate();
-
-                let found = false;
-                
-                // Iterate through identified words
-                for (let word of ret.data.words) {
-                    // Simple case-insensitive match (you can upgrade to exact match if needed)
-                    if (word.text.toLowerCase().includes(targetText.toLowerCase())) {
-                        found = true;
-                        let bbox = word.bbox;
-                        let x = bbox.x0;
-                        let y = bbox.y0;
-                        let w = bbox.x1 - bbox.x0;
-                        let h = bbox.y1 - bbox.y0;
-
-                        // Add padding to bounding box to ensure full cover
-                        x = Math.max(0, x - 2);
-                        y = Math.max(0, y - 2);
-                        w = w + 4;
-                        h = h + 4;
-
-                        replaceAtCoordinates(x, y, w, h, newText);
-                    }
-                }
-
-                if (found) {
-                    logStatus(`Success: Automatically replaced "${targetText}". You can edit the new text on canvas.`);
-                } else {
-                    logStatus(`Text "${targetText}" not found in image. Try checking spelling or case.`);
-                }
-            } catch (err) {
-                console.error(err);
-                logStatus("ERROR: OCR engine failed.");
-            } finally {
-                document.getElementById('btnAutoReplace').disabled = false;
+            if (isDrawingMode) {
+                btn.classList.add('active');
+                btn.innerText = 'Drawing Active...';
+                canvas.defaultCursor = 'crosshair';
+                canvas.selection = false; 
+                canvas.discardActiveObject();
+                canvas.renderAll();
+                logStatus('MODE ACTIVE: Draw a box exactly over the text you want to edit.');
+            } else {
+                btn.classList.remove('active');
+                btn.innerText = '✂️ Draw Box';
+                canvas.defaultCursor = 'default';
+                canvas.selection = true;
+                logStatus('Selection mode active. You can move or double-click text to edit.');
             }
         }
 
-        function replaceAtCoordinates(x, y, w, h, newText) {
-            // Extract colors automatically
+        canvas.on('mouse:down', function(o) {
+            if (!isDrawingMode) return;
+            isMouseDown = true;
+            let pointer = canvas.getPointer(o.e);
+            startX = pointer.x;
+            startY = pointer.y;
+
+            selectionRect = new fabric.Rect({
+                left: startX, top: startY, width: 0, height: 0,
+                fill: 'rgba(239, 68, 68, 0.2)',
+                stroke: '#ef4444', strokeWidth: 1, strokeDashArray: [3, 3],
+                selectable: false, evented: false
+            });
+            canvas.add(selectionRect);
+        });
+
+        canvas.on('mouse:move', function(o) {
+            if (!isDrawingMode || !isMouseDown) return;
+            let pointer = canvas.getPointer(o.e);
+            
+            if(startX > pointer.x) { selectionRect.set({ left: Math.abs(pointer.x) }); }
+            if(startY > pointer.y) { selectionRect.set({ top: Math.abs(pointer.y) }); }
+            
+            selectionRect.set({ width: Math.abs(startX - pointer.x) });
+            selectionRect.set({ height: Math.abs(startY - pointer.y) });
+            canvas.renderAll();
+        });
+
+        canvas.on('mouse:up', function(o) {
+            if (!isDrawingMode || !isMouseDown) return;
+            isMouseDown = false;
+            
+            if (selectionRect.width > 10 && selectionRect.height > 10) {
+                processDrawnBox(selectionRect);
+            } else {
+                canvas.remove(selectionRect); 
+            }
+            
+            toggleDrawMode(); // Turn off draw mode after one selection
+        });
+
+        // --- Core Processing: OCR & Replace ---
+        async function processDrawnBox(rectObj) {
+            let x = Math.round(rectObj.left);
+            let y = Math.round(rectObj.top);
+            let w = Math.round(rectObj.width);
+            let h = Math.round(rectObj.height);
+
+            // Remove the temporary red selection box
+            canvas.remove(rectObj);
+
+            // 1. Extract Colors
             let { bgColorHex, textColorHex } = extractStrictColors(x, y, w, h);
 
-            // Create background mask
-            let maskRect = new fabric.Rect({
-                left: x, top: y, width: w, height: h,
-                fill: bgColorHex, selectable: false, evented: false
-            });
-            canvas.add(maskRect);
-            maskRect.sendToBack();
+            // 2. Crop Image for OCR
+            let cropCanvas = document.createElement('canvas');
+            cropCanvas.width = w;
+            cropCanvas.height = h;
+            let cropCtx = cropCanvas.getContext('2d');
+            cropCtx.drawImage(originalImageElement, x, y, w, h, 0, 0, w, h);
+            let croppedBase64 = cropCanvas.toDataURL('image/png');
 
-            // Insert New Text
-            let selectedFont = document.getElementById('fontFamily').value;
-            let isBold = document.getElementById('defaultBold').checked ? 'bold' : 'normal';
+            logStatus('Scanning selected area... Please wait.', true);
 
-            let editableText = new fabric.IText(newText, {
-                left: x, top: y, 
-                fontSize: Math.round(h * 0.9), // Match height roughly
-                fontFamily: selectedFont, 
-                fill: textColorHex, 
-                fontWeight: isBold,
-                editable: true
-            });
+            try {
+                // 3. Run OCR on cropped area
+                const result = await Tesseract.recognize(croppedBase64, 'eng');
+                let extractedText = result.data.text.trim();
+                
+                // Fallback if OCR fails to read anything
+                if (!extractedText) extractedText = "Edit Me";
 
-            canvas.add(editableText);
-            canvas.setActiveObject(editableText);
-            editableText.bringToFront();
+                // 4. Create Background Mask
+                let maskRect = new fabric.Rect({
+                    left: x, top: y, width: w, height: h,
+                    fill: bgColorHex, selectable: false, evented: false
+                });
+                canvas.add(maskRect);
+                maskRect.sendToBack();
+
+                // 5. Insert Editable Text
+                let selectedFont = document.getElementById('fontFamily').value;
+                let isBold = document.getElementById('defaultBold').checked ? 'bold' : 'normal';
+
+                // Adjusted font size to fit box nicely
+                let fontSize = Math.round(h * 0.75); 
+
+                let editableText = new fabric.IText(extractedText, {
+                    left: x + 2, top: y + 2, 
+                    fontSize: fontSize, 
+                    fontFamily: selectedFont, 
+                    fill: textColorHex, 
+                    fontWeight: isBold,
+                    editable: true
+                });
+
+                canvas.add(editableText);
+                canvas.setActiveObject(editableText);
+                editableText.bringToFront();
+
+                logStatus(`Text extracted: "${extractedText}". Double-click text to edit.`);
+
+            } catch (error) {
+                console.error(error);
+                logStatus("ERROR: Failed to extract text.");
+            }
         }
 
-        // Color Extraction Engine (same as before)
+        // Color Extraction Engine
         function extractStrictColors(x, y, w, h) {
             let p = 2; 
             const bgAreas = [
@@ -273,7 +323,6 @@
             }
         }
 
-        // Toggle bold for selected text
         function toggleSelectedBold() {
             let activeObj = canvas.getActiveObject();
             if (activeObj && activeObj.type === 'i-text') {
@@ -284,15 +333,13 @@
             }
         }
 
-        // Event Listeners for Live Editing
+        // Real-time property binding
         document.getElementById('textColor').addEventListener('input', function(e) {
             if (canvas.getActiveObject()) { canvas.getActiveObject().set('fill', e.target.value); canvas.renderAll(); }
         });
-        
         document.getElementById('textSize').addEventListener('input', function(e) {
             if (canvas.getActiveObject()) { canvas.getActiveObject().set('fontSize', parseInt(e.target.value)); canvas.renderAll(); }
         });
-
         document.getElementById('fontFamily').addEventListener('change', function(e) {
             if (canvas.getActiveObject() && canvas.getActiveObject().type === 'i-text') { 
                 canvas.getActiveObject().set('fontFamily', e.target.value); 
@@ -310,7 +357,7 @@
         function downloadImage() {
             canvas.discardActiveObject(); canvas.renderAll();
             let link = document.createElement('a');
-            link.download = 'DAITYA_AutoReplacer.png';
+            link.download = 'DAITYA_SmartExtracted.png';
             link.href = canvas.toDataURL({ format: 'png', quality: 1 }); 
             link.click();
         }

@@ -3,267 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAITYA - Ultimate Manual Override Editor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Hind:wght@600&display=swap" rel="stylesheet">
+    <title>DAITYA - Precision Snip Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #ef4444; --primary-hover: #dc2626; --success: #10b981; --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #fafafa; --text-muted: #a1a1aa; }
-        body { font-family: 'Hind', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1100px; margin: 0 auto; background: var(--surface); border-radius: 12px; padding: 25px; border: 1px solid var(--border); box-shadow: 0 0 30px rgba(239, 68, 68, 0.1); }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;}
-        .header h1 { color: var(--primary); margin: 0 0 5px 0; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
+        :root { --primary: #3b82f6; --primary-hover: #2563eb; --bg: #0f172a; --panel: #1e293b; --border: #334155; --text: #f8fafc; }
+        body { font-family: 'Hind', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { color: var(--primary); margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { color: #94a3b8; margin: 0; font-size: 14px; }
         
-        .upload-section { border: 2px dashed var(--border); padding: 20px; text-align: center; border-radius: 8px; background: #09090b; margin-bottom: 20px; cursor: pointer; }
-        input[type="file"] { font-size: 14px; color: var(--text); }
+        .toolbar { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 8px; display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; box-shadow: 0 10px 20px rgba(0,0,0,0.5); width: 100%; max-width: 1000px; justify-content: center;}
+        
+        input[type="file"] { color: var(--text); font-size: 14px; cursor: pointer; width: 190px;}
+        input[type="text"], select { background: #334155; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; outline: none; font-family: inherit;}
+        input[type="color"] { background: none; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; height: 35px; width: 45px; padding: 2px; }
+        input[type="number"] { background: #334155; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 60px; outline: none;}
 
-        .editor-panels { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
-        .control-panel { background: #09090b; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+        button { background: var(--primary); color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit;}
+        button:hover { background: var(--primary-hover); transform: translateY(-1px);}
+        button:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; transform: none;}
         
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
-        input[type="text"], input[type="number"] { width: 100%; box-sizing: border-box; padding: 10px; background: #18181b; color: white; border: 1px solid var(--border); border-radius: 6px; font-family: 'Hind', sans-serif; }
-        input[type="color"] { width: 100%; height: 40px; border: 1px solid var(--border); border-radius: 6px; background: #18181b; cursor: pointer; padding: 2px;}
-        
-        .btn { background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; font-family: 'Hind', sans-serif;}
-        .btn:hover { background: var(--primary-hover); }
-        .btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; }
-        .btn-success { background: var(--success); }
+        .btn-snip { background: #ef4444; }
+        .btn-snip:hover { background: #dc2626; }
+        .btn-snip.active { background: #22c55e; animation: pulse 1.5s infinite; }
+        .btn-green { background: #10b981; }
+        .btn-green:hover { background: #059669; }
 
-        #status { text-align: center; padding: 10px; border-radius: 6px; background: #000; color: var(--primary); font-weight: bold; margin-bottom: 15px; font-size: 13px; border: 1px solid var(--primary);}
-        
-        .result-panel { position: relative; border: 1px solid var(--border); border-radius: 8px; background: #000; overflow: auto; display: flex; justify-content: center; align-items: flex-start; max-height: 700px; cursor: crosshair;}
-        canvas { display: block; max-width: 100%; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
 
-        @media (max-width: 768px) { .editor-panels { grid-template-columns: 1fr; } }
+        #status { background: #1e293b; border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-bottom: 15px; width: 100%; max-width: 1000px; text-align: center; }
+        
+        .canvas-container-wrapper { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: #000; }
+        
+        .icon-btn { padding: 8px 12px; font-size: 16px; }
+        .tool-group { display: flex; align-items: center; gap: 8px; padding: 0 10px; border-right: 1px solid var(--border); }
+        .tool-group:last-child { border-right: none; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1>DAITYA Manual Override</h1>
-            <p>Module: Drag-to-Select | Custom Size | Custom Color | Hindi & Eng</p>
-        </div>
+    <div class="header">
+        <h1>DAITYA Sniper Editor</h1>
+        <p>Select ONLY what you want. Auto-replace and format instantly.</p>
+    </div>
 
-        <div id="status">> Awaiting Image Payload...</div>
+    <div id="status">> Awaiting Image Upload.</div>
 
-        <div class="upload-section">
+    <div class="toolbar">
+        <div class="tool-group">
             <input type="file" id="uploadImage" accept="image/*" />
         </div>
-
-        <div class="editor-panels">
-            <div class="control-panel">
-                <div class="input-group">
-                    <label>1. Target Text Selection</label>
-                    <p style="font-size: 11px; color: #ef4444; margin: 0 0 10px 0;">* Mouse se image par old text ke upar ek box draw karo.</p>
-                </div>
-
-                <div class="input-group">
-                    <label>2. New Text (Hindi / Eng)</label>
-                    <input type="text" id="newText" placeholder="नया टेक्स्ट यहाँ लिखें">
-                </div>
-
-                <div class="input-group">
-                    <label>3. Font Size</label>
-                    <input type="number" id="customSize" value="30">
-                </div>
-
-                <div class="input-group">
-                    <label>4. Text Color</label>
-                    <input type="color" id="customColor" value="#ffffff">
-                </div>
-                
-                <button class="btn" id="btnReplace" onclick="executeManualOverride()" disabled>
-                    [ INJECT PAYLOAD ]
-                </button>
-
-                <button class="btn btn-success" id="btnDownload" onclick="downloadImage()" disabled>
-                    [ DOWNLOAD OUTPUT ]
-                </button>
-            </div>
-            
-            <div class="result-panel">
-                <canvas id="outputCanvas"></canvas>
-            </div>
+        
+        <div class="tool-group">
+            <input type="text" id="autoText" placeholder="Replacement Text..." title="Text to auto-insert when box is drawn" style="width: 150px;">
+            <select id="fontFamily" title="Select Font to Match">
+                <option value="Hind">Hind</option>
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times</option>
+                <option value="Courier New">Courier</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                <input type="checkbox" id="defaultBold" checked> Bold
+            </label>
         </div>
+
+        <div class="tool-group">
+            <button class="btn-snip" id="btnDraw" onclick="toggleDrawMode()" disabled>✂️ Draw Box</button>
+        </div>
+
+        <div class="tool-group">
+            <input type="color" id="textColor" value="#ffffff" disabled title="Change Text Color">
+            <input type="number" id="textSize" value="20" disabled title="Change Font Size">
+            <button class="icon-btn" id="btnBold" onclick="toggleSelectedBold()" disabled title="Toggle Bold on Selected Text"><b>B</b></button>
+            <button class="icon-btn" id="btnDelete" onclick="deleteSelected()" disabled title="Delete Selected">🗑️</button>
+        </div>
+
+        <button class="btn-green" id="btnDownload" onclick="downloadImage()" disabled style="margin-left: auto;">⬇ Download HD</button>
+    </div>
+
+    <div class="canvas-container-wrapper">
+        <canvas id="editorCanvas"></canvas>
     </div>
 
     <script>
-        let currentImage = null;
-        let originalCanvas = null; 
         const statusEl = document.getElementById('status');
-        const canvas = document.getElementById('outputCanvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let canvas = new fabric.Canvas('editorCanvas', { selection: true });
+        let originalImageElement = null; 
+        let tempCanvasContext = null;
 
-        // Selection Variables
-        let isDrawing = false;
-        let startX, startY, currentX, currentY;
-        let selectionBox = null; // Stores {x, y, w, h}
+        // Manual Drawing Variables
+        let isDrawingMode = false;
+        let isMouseDown = false;
+        let selectionRect = null;
+        let startX, startY;
 
-        function logStatus(msg) {
-            statusEl.innerText = '> ' + msg;
-        }
+        function logStatus(msg) { statusEl.innerText = '> ' + msg; }
 
-        // 1. Upload Image
+        // Load Image
         document.getElementById('uploadImage').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    currentImage = new Image();
-                    currentImage.onload = function() {
-                        canvas.width = currentImage.width;
-                        canvas.height = currentImage.height;
-                        ctx.drawImage(currentImage, 0, 0);
+                reader.onload = function(f) {
+                    fabric.Image.fromURL(f.target.result, function(img) {
+                        canvas.clear();
+                        canvas.setWidth(img.width);
+                        canvas.setHeight(img.height);
+                        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
                         
-                        originalCanvas = document.createElement('canvas');
-                        originalCanvas.width = currentImage.width;
-                        originalCanvas.height = currentImage.height;
-                        originalCanvas.getContext('2d').drawImage(currentImage, 0, 0);
-
-                        logStatus('System Ready. Draw a box over the text you want to remove.');
-                        document.getElementById('btnReplace').disabled = false;
+                        originalImageElement = new Image();
+                        originalImageElement.src = f.target.result;
+                        originalImageElement.onload = () => {
+                            let tempCanvas = document.createElement('canvas');
+                            tempCanvas.width = img.width;
+                            tempCanvas.height = img.height;
+                            tempCanvasContext = tempCanvas.getContext('2d', { willReadFrequently: true });
+                            tempCanvasContext.drawImage(originalImageElement, 0, 0);
+                        };
+                        
+                        document.getElementById('btnDraw').disabled = false;
                         document.getElementById('btnDownload').disabled = false;
-                        selectionBox = null;
-                    };
-                    currentImage.src = event.target.result;
+                        logStatus('Image loaded. Type replacement text, check font settings, then [✂️ Draw Box].');
+                    });
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // 2. Mouse Events for Drag-to-Select
-        canvas.addEventListener('mousedown', (e) => {
-            if (!currentImage) return;
-            isDrawing = true;
-            const rect = canvas.getBoundingClientRect();
-            // Calculate scale in case canvas is resized by CSS
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+        // --- Manual Snipping Logic ---
+        function toggleDrawMode() {
+            isDrawingMode = !isDrawingMode;
+            const btn = document.getElementById('btnDraw');
             
-            startX = (e.clientX - rect.left) * scaleX;
-            startY = (e.clientY - rect.top) * scaleY;
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (!isDrawing) return;
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            currentX = (e.clientX - rect.left) * scaleX;
-            currentY = (e.clientY - rect.top) * scaleY;
-
-            // Redraw image and draw selection rectangle
-            ctx.drawImage(originalCanvas, 0, 0);
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            ctx.strokeRect(startX, startY, currentX - startX, currentY - startY);
-            
-            // Highlight background slightly
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
-            ctx.fillRect(startX, startY, currentX - startX, currentY - startY);
-        });
-
-        canvas.addEventListener('mouseup', (e) => {
-            if (!isDrawing) return;
-            isDrawing = false;
-            ctx.setLineDash([]); // Reset line dash
-
-            const w = currentX - startX;
-            const h = currentY - startY;
-
-            // Handle reverse drawing (bottom-right to top-left)
-            const finalX = w < 0 ? currentX : startX;
-            const finalY = h < 0 ? currentY : startY;
-            const finalW = Math.abs(w);
-            const finalH = Math.abs(h);
-
-            if (finalW > 5 && finalH > 5) {
-                selectionBox = { x: finalX, y: finalY, w: finalW, h: finalH };
-                logStatus(`Target Locked: Box [${Math.round(finalW)}x${Math.round(finalH)}]. Set Text, Size, Color and Inject.`);
+            if (isDrawingMode) {
+                btn.classList.add('active');
+                btn.innerText = 'Drawing Active...';
+                canvas.defaultCursor = 'crosshair';
+                canvas.selection = false; 
+                canvas.discardActiveObject();
+                canvas.renderAll();
+                logStatus('MODE ACTIVE: Click and drag a box exactly over the old text.');
             } else {
-                ctx.drawImage(originalCanvas, 0, 0); // Clear tiny accidental clicks
-                selectionBox = null;
-            }
-        });
-
-        // 3. Execution Bypass
-        function executeManualOverride() {
-            if (!currentImage || !originalCanvas) return;
-            if (!selectionBox) {
-                logStatus('ERROR: No target selected. Draw a box on the image first.');
-                return;
-            }
-
-            const newTextData = document.getElementById('newText').value;
-            const customSize = document.getElementById('customSize').value;
-            const customColor = document.getElementById('customColor').value;
-
-            try {
-                // Restore original before applying final mask (removes red dashed line)
-                ctx.drawImage(originalCanvas, 0, 0);
-
-                const { x, y, w, h } = selectionBox;
-
-                // Auto-calculate background mask color from the edges of the box
-                const bgColor = getEdgeAverageColor(x, y, w, h, originalCanvas);
-
-                // Erase Old Text (In-Paint Mask)
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(x - 2, y - 2, w + 4, h + 4); // Slight padding to ensure old text hides
-
-                // Inject New Text
-                ctx.font = `600 ${customSize}px 'Hind', sans-serif`;
-                ctx.fillStyle = customColor;
-                ctx.textBaseline = 'top';
-                
-                // Align text inside the box (Left-aligned, vertically centered)
-                ctx.fillText(newTextData, x + 2, y + (h/2) - (customSize/2));
-
-                // Save this new state as the original so we can keep editing
-                originalCanvas.getContext('2d').drawImage(canvas, 0, 0);
-                selectionBox = null; // Reset selection
-
-                logStatus(`PAYLOAD INJECTED. You can draw another box to edit more text.`);
-
-            } catch (err) {
-                logStatus('CRITICAL ERROR: ' + err.message);
+                btn.classList.remove('active');
+                btn.innerText = '✂️ Draw Box';
+                canvas.defaultCursor = 'default';
+                canvas.selection = true;
+                logStatus('Selection mode active. You can now move or edit objects.');
             }
         }
 
-        // Helper: Get background color from just outside the selection box
-        function getEdgeAverageColor(x, y, w, h, sourceCanvas) {
-            const tempCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
-            let r=0, g=0, b=0, count=0;
+        canvas.on('mouse:down', function(o) {
+            if (!isDrawingMode) return;
+            isMouseDown = true;
+            let pointer = canvas.getPointer(o.e);
+            startX = pointer.x;
+            startY = pointer.y;
+
+            selectionRect = new fabric.Rect({
+                left: startX, top: startY, width: 0, height: 0,
+                fill: 'rgba(239, 68, 68, 0.2)',
+                stroke: '#ef4444', strokeWidth: 1, strokeDashArray: [3, 3],
+                selectable: false, evented: false
+            });
+            canvas.add(selectionRect);
+        });
+
+        canvas.on('mouse:move', function(o) {
+            if (!isDrawingMode || !isMouseDown) return;
+            let pointer = canvas.getPointer(o.e);
             
-            // Sample a 5px border around the box to get the background color
-            const p = 5; 
-            const edges = [
-                { ex: Math.max(0, x - p), ey: Math.max(0, y - p), ew: w + p*2, eh: p }, // Top
-                { ex: Math.max(0, x - p), ey: y + h, ew: w + p*2, eh: p } // Bottom
+            if(startX > pointer.x) { selectionRect.set({ left: Math.abs(pointer.x) }); }
+            if(startY > pointer.y) { selectionRect.set({ top: Math.abs(pointer.y) }); }
+            
+            selectionRect.set({ width: Math.abs(startX - pointer.x) });
+            selectionRect.set({ height: Math.abs(startY - pointer.y) });
+            canvas.renderAll();
+        });
+
+        canvas.on('mouse:up', function(o) {
+            if (!isDrawingMode || !isMouseDown) return;
+            isMouseDown = false;
+            
+            if (selectionRect.width > 5 && selectionRect.height > 5) {
+                processDrawnBox(selectionRect);
+            } else {
+                canvas.remove(selectionRect); 
+            }
+            
+            toggleDrawMode(); 
+        });
+
+        // --- Processing the user's box ---
+        function processDrawnBox(rectObj) {
+            let x = Math.round(rectObj.left);
+            let y = Math.round(rectObj.top);
+            let w = Math.round(rectObj.width);
+            let h = Math.round(rectObj.height);
+
+            let { bgColorHex, textColorHex } = extractStrictColors(x, y, w, h);
+
+            canvas.remove(rectObj);
+
+            // Create background mask
+            let maskRect = new fabric.Rect({
+                left: x, top: y, width: w, height: h,
+                fill: bgColorHex, selectable: false, evented: false
+            });
+            canvas.add(maskRect);
+            maskRect.sendToBack();
+
+            // Get user settings for text replacement
+            let replaceText = document.getElementById('autoText').value || 'Edit Me';
+            let selectedFont = document.getElementById('fontFamily').value;
+            let isBold = document.getElementById('defaultBold').checked ? 'bold' : 'normal';
+
+            let editableText = new fabric.IText(replaceText, {
+                left: x + 2, top: y + 2, 
+                fontSize: Math.round(h * 0.8), // Dynamically sizing based on box height
+                fontFamily: selectedFont, 
+                fill: textColorHex, 
+                fontWeight: isBold,
+                editable: true
+            });
+
+            canvas.add(editableText);
+            canvas.setActiveObject(editableText);
+            editableText.bringToFront();
+
+            logStatus('Text replaced successfully. Adjust properties in toolbar if needed.');
+        }
+
+        // Color Extraction Engine
+        function extractStrictColors(x, y, w, h) {
+            let p = 2; 
+            const bgAreas = [
+                { rx: x, ry: y, rw: p, rh: h }, { rx: x + w - p, ry: y, rw: p, rh: h },
+                { rx: x, ry: y, rw: w, rh: p }, { rx: x, ry: y + h - p, rw: w, rh: p }
             ];
 
-            edges.forEach(rect => {
-                if (rect.ew > 0 && rect.eh > 0) {
-                    const data = tempCtx.getImageData(rect.ex, rect.ey, rect.ew, rect.eh).data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        r += data[i]; g += data[i+1]; b += data[i+2]; count++;
-                    }
+            let r=0, g=0, b=0, count=0;
+            bgAreas.forEach(area => {
+                if (area.rw > 0 && area.rh > 0) {
+                    let data = tempCanvasContext.getImageData(area.rx, area.ry, area.rw, area.rh).data;
+                    for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; count++; }
                 }
             });
-            if (count === 0) return '#ffffff';
-            return `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
+            let bgR = Math.round(r/count)||255; let bgG = Math.round(g/count)||255; let bgB = Math.round(b/count)||255;
+
+            let textData = tempCanvasContext.getImageData(x, y, w, h).data;
+            let maxContrast = [0,0,0]; let maxDist = -1;
+            for (let i = 0; i < textData.length; i += 8) { 
+                let dist = Math.sqrt(Math.pow(textData[i]-bgR, 2) + Math.pow(textData[i+1]-bgG, 2) + Math.pow(textData[i+2]-bgB, 2));
+                if (dist > maxDist) { maxDist = dist; maxContrast = [textData[i], textData[i+1], textData[i+2]]; }
+            }
+            
+            let txtHex = maxDist < 20 ? '#000000' : "#" + (1 << 24 | maxContrast[0] << 16 | maxContrast[1] << 8 | maxContrast[2]).toString(16).slice(1);
+            let bgHex = "#" + (1 << 24 | bgR << 16 | bgG << 8 | bgB).toString(16).slice(1);
+            
+            return { bgColorHex: bgHex, textColorHex: txtHex };
         }
 
-        // 4. Download
+        // --- Live Edit UI ---
+        canvas.on('selection:created', handleSelection);
+        canvas.on('selection:updated', handleSelection);
+        canvas.on('selection:cleared', () => {
+            document.getElementById('textColor').disabled = true;
+            document.getElementById('textSize').disabled = true;
+            document.getElementById('btnBold').disabled = true; 
+            document.getElementById('btnDelete').disabled = true;
+        });
+
+        function handleSelection(e) {
+            const obj = e.selected[0];
+            if (obj && obj.type === 'i-text') {
+                document.getElementById('textColor').disabled = false;
+                document.getElementById('textSize').disabled = false;
+                document.getElementById('btnBold').disabled = false; 
+                document.getElementById('btnDelete').disabled = false;
+                
+                document.getElementById('textColor').value = obj.fill || '#ffffff';
+                document.getElementById('textSize').value = obj.fontSize || 20;
+                document.getElementById('fontFamily').value = obj.fontFamily || 'Hind';
+            }
+        }
+
+        // Toggle bold for ALREADY selected text
+        function toggleSelectedBold() {
+            let activeObj = canvas.getActiveObject();
+            if (activeObj && activeObj.type === 'i-text') {
+                let currentWeight = activeObj.fontWeight;
+                let newWeight = (currentWeight === 'bold' || currentWeight === 600 || currentWeight === 700) ? 'normal' : 'bold';
+                activeObj.set('fontWeight', newWeight);
+                canvas.renderAll();
+            }
+        }
+
+        // Event Listeners for Live Editing
+        document.getElementById('textColor').addEventListener('input', function(e) {
+            if (canvas.getActiveObject()) { canvas.getActiveObject().set('fill', e.target.value); canvas.renderAll(); }
+        });
+        
+        document.getElementById('textSize').addEventListener('input', function(e) {
+            if (canvas.getActiveObject()) { canvas.getActiveObject().set('fontSize', parseInt(e.target.value)); canvas.renderAll(); }
+        });
+
+        document.getElementById('fontFamily').addEventListener('change', function(e) {
+            if (canvas.getActiveObject() && canvas.getActiveObject().type === 'i-text') { 
+                canvas.getActiveObject().set('fontFamily', e.target.value); 
+                canvas.renderAll(); 
+            }
+        });
+
+        function deleteSelected() {
+            if (canvas.getActiveObject()) { 
+                canvas.remove(canvas.getActiveObject()); 
+                canvas.discardActiveObject();
+            }
+        }
+
         function downloadImage() {
-            if (!currentImage) return;
-            const link = document.createElement('a');
-            link.download = 'DAITYA_Manual_Override.png';
-            link.href = canvas.toDataURL('image/png', 1.0); 
+            canvas.discardActiveObject(); canvas.renderAll();
+            let link = document.createElement('a');
+            link.download = 'DAITYA_Sniper_Output.png';
+            link.href = canvas.toDataURL({ format: 'png', quality: 1 }); 
             link.click();
-            logStatus('Payload output downloaded successfully.');
         }
     </script>
 </body>
